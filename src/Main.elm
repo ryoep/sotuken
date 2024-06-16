@@ -2113,7 +2113,7 @@ viewBrick model xy node =
                 SpacerBrick ->
                     "white"
         image =
-            "assets/" ++
+            "dist/assets/" ++
             case node.getBrickType of
                 BasicBrick ->
                    if node.getBrickCommand == CommandToioMoveForward
