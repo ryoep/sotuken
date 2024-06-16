@@ -2112,8 +2112,8 @@ viewBrick model xy node =
                     "limegreen"
                 SpacerBrick ->
                     "white"
-        imagepath =
-            "dist/assets/" ++
+        image =
+            "dist/assets" ++
             case node.getBrickType of
                 BasicBrick ->
                    if node.getBrickCommand == CommandToioMoveForward
