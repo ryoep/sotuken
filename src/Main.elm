@@ -1835,14 +1835,6 @@ view model =
                          (Decode.field "pageX" Decode.float)
                          (Decode.field "pageY" Decode.float)
 
-        --追加（touchmove）
-         , preventDefaultOn "touchmove"
-              <| whenDragging model
-                  <| Decode.map2
-                         (\pageX pageY -> MsgMoveUs ( pageX, pageY ))
-                         (Decode.at ["changedTouches", "0", "pageX"] Decode.float)
-                         (Decode.at ["changedTouches", "0", "pageY"] Decode.float)
-
         
         ]
         [ div
@@ -1956,16 +1948,8 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
         [ style "position" "absolute"
         , style "top" (String.fromFloat y ++ "px")
         , style "left" (String.fromFloat x ++ "px")
-
         -- mouseup
         , on "mouseup"
-              <| whenDragging model
-                  <| whenLeftButtonIsDown
-                      <| Decode.succeed
-                          <| MsgAttachMe root
-
-        -- touchend
-        , on "touchend"
               <| whenDragging model
                   <| whenLeftButtonIsDown
                       <| Decode.succeed
@@ -1979,19 +1963,8 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                       -- MsgLetMeRootは根には無意味、代わりにMsgStartDnDを単独でセット
                       <| Decode.map2
                              (\pageX pageY -> MsgStartDnD ( x, y ) ( pageX, pageY ))
-                             (Decode.field "pageX" Decode.float)
+                             (Decode.field "pageX" Decode.float)--6週目　xyは211行目で取得しているのでpagex,pageyを取得する方法を考える。
                              (Decode.field "pageY" Decode.float)
-
-
-        -- touchstart
-        , on "touchstart"
-              <| whenNotDragging model
-                  <| whenLeftButtonIsDown
-                      -- MsgLetMeRootは根には無意味、代わりにMsgStartDnDを単独でセット
-                      <| Decode.map2
-                             (\pageX pageY -> MsgStartDnD ( x, y ) ( pageX, pageY ))
-                             (Decode.at ["changedTouches", "0", "pageX"] Decode.float)
-                             (Decode.at ["changedTouches", "0", "pageY"] Decode.float)
 
 
         -- contextmenu
@@ -2063,39 +2036,6 @@ viewAST model ( x, y ) direction ast =
                                   -- 以下はターゲットがInputフォームかどうかの判定の計算にのみ使用
                                   (Decode.field "offsetX" Decode.float)
                                   (Decode.field "offsetY" Decode.float)
-
-                -- touchstart
-                , on "touchstart"
-                      <| whenNotDragging model
-                          <| whenLeftButtonIsDown
-                              <| Decode.map4
-                                  (\pageX pageY offsetX offsetY ->
-                                      let
-                                          -- boudingX/Yの計算でもclientX/YではなくpageX/Yを使用
-                                          -- するよう変更（Thanks: 山中君）
-                                          -- 変数名mouseX/YもpageX/Yに変更
-                                          boundingX = pageX - offsetX
-                                          boundingY = pageY - offsetY
-                                      in
-                                          -- Inputフォームのmouseclickが捕獲されなくなるバグへの
-                                          -- ワークアラウンド。( boundingX, boundingY )がブロックの左上
-                                          -- のときだけMsgLetMeRootを発行する。そうでなくて
-                                          -- Inputフォームの左上のときはletMeRootが実行されることは
-                                          -- なくなるので、Inputフォームのmouseclickイベントが正しく
-                                          -- 処理されるようになる。
-                                          if insideBrick ( x, y ) ( boundingX, boundingY )
-                                          then MsgLetMeRoot
-                                                   (ASTxy ( x, y ) (ASTne n b r))
-                                                   ( pageX, pageY )
-                                          else MsgNOP
-                                  )
-                                  (Decode.at ["changedTouches", "0", "pageX"] Decode.float)
-                                  (Decode.at ["changedTouches", "0", "pageY"] Decode.float)
-                                  -- 以下はターゲットがInputフォームかどうかの判定の計算にのみ使用
-                                  (Decode.at ["changedTouches", "0", "offsetX"] Decode.float)
-                                  (Decode.at ["changedTouches", "0", "offsetY"] Decode.float)
-
-
                 -- contextmenu
                 -- コンテクストメニューが開かないようにpreventDefaultが必要
                 , preventDefaultOn "contextmenu"
