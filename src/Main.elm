@@ -1835,17 +1835,28 @@ view model =
                          (\pageX pageY -> MsgMoveUs ( pageX, pageY ))
                          (Decode.field "pageX" Decode.float)
                          (Decode.field "pageY" Decode.float)
+        
 
-        --追加（touchmove）
-         , preventDefaultOn "touchmove"
-              <| whenDragging model
-                  <| Decode.map2
-                         (\pageX pageY -> MsgMoveUs ( pageX, pageY ))
-                         (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
-                         (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
+        -- 変更後のtouchmoveイベントの処理
+        , preventDefaultOn "touchmove"
+            <| whenDragging model
+                <| Decode.map3
+                    (\pageX pageY (rectLeft, rectTop) ->
+                        let
+                            boundingX = pageX - rectLeft
+                            boundingY = pageY - rectTop
+                        in
+                            MsgMoveUs (boundingX, boundingY)
+                    )
+                    (Decode.at ["changedTouches", "0", "pageX"] Decode.float)
+                    (Decode.at ["changedTouches", "0", "pageY"] Decode.float)
+                    (Decode.at ["target", "getBoundingClientRect"] getBoundingClientRect)
 
         
         ]
+
+
+
         [ div
             [ class "column is-one-quarter"
             , style "background-color" "orange"
@@ -1983,14 +1994,21 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                              (Decode.field "pageY" Decode.float)
 
 
-        -- touchstart
+        -- 変更後のtouchstartイベントの処理
         , on "touchstart"
-              <| whenNotDragging model
-                      -- MsgLetMeRootは根には無意味、代わりにMsgStartDnDを単独でセット
-                    <| Decode.map2
-                         (\pageX pageY -> MsgStartDnD ( x, y ) ( pageX, pageY ))
-                         (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
-                         (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
+            <| whenNotDragging model
+                <| Decode.map3
+                    (\pageX pageY (rectLeft, rectTop) ->
+                        let
+                            boundingX = pageX - rectLeft
+                            boundingY = pageY - rectTop
+                        in
+                            MsgStartDnD (x, y) (boundingX, boundingY)
+                    )
+                    (Decode.at ["changedTouches", "0", "pageX"] Decode.float)
+                    (Decode.at ["changedTouches", "0", "pageY"] Decode.float)
+                    (Decode.at ["target", "getBoundingClientRect"] getBoundingClientRect)
+
 
 
         -- contextmenu
@@ -2063,35 +2081,25 @@ viewAST model ( x, y ) direction ast =
                                   (Decode.field "offsetX" Decode.float)
                                   (Decode.field "offsetY" Decode.float)
 
-                -- touchstart
+                -- 修正後のtouchstartイベントの処理
                 , on "touchstart"
-                      <| whenNotDragging model
-                              <| Decode.map4
-                                  (\pageX pageY offsetX offsetY ->
-                                      let
-                                          -- boudingX/Yの計算でもclientX/YではなくpageX/Yを使用
-                                          -- するよう変更（Thanks: 山中君）
-                                          -- 変数名mouseX/YもpageX/Yに変更
-                                          boundingX = pageX - offsetX
-                                          boundingY = pageY - offsetY
-                                      in
-                                          -- Inputフォームのmouseclickが捕獲されなくなるバグへの
-                                          -- ワークアラウンド。( boundingX, boundingY )がブロックの左上
-                                          -- のときだけMsgLetMeRootを発行する。そうでなくて
-                                          -- Inputフォームの左上のときはletMeRootが実行されることは
-                                          -- なくなるので、Inputフォームのmouseclickイベントが正しく
-                                          -- 処理されるようになる。
-                                          if insideBrick ( x, y ) ( boundingX, boundingY )
-                                          then MsgLetMeRoot
-                                                   (ASTxy ( x, y ) (ASTne n b r))
-                                                   ( pageX, pageY )
-                                          else MsgNOP
-                                  )
-                                  (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
-                                  (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
-                                  -- 以下はターゲットがInputフォームかどうかの判定の計算にのみ使用
-                                  (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
-                                  (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
+                   <| whenNotDragging model
+                     <| Decode.map3
+                            (\pageX pageY (rectLeft, rectTop) ->
+                                let
+                                    boundingX = pageX - rectLeft
+                                    boundingY = pageY - rectTop
+                                 in
+                                    if insideBrick (x, y) (boundingX, boundingY) then
+                                        MsgLetMeRoot
+                                            (ASTxy (x, y) (ASTne n b r))
+                                            (pageX, pageY)
+                                    else
+                                        MsgNOP
+                            )
+                            (Decode.at ["changedTouches", "0", "pageX"] Decode.float)
+                            (Decode.at ["changedTouches", "0", "pageY"] Decode.float)
+                            (Decode.at ["target", "getBoundingClientRect"] getBoundingClientRect)
 
 
                 -- contextmenu
@@ -2107,6 +2115,13 @@ viewAST model ( x, y ) direction ast =
                 , ( "B", lazy4 viewAST model ( x, y + interval model ) ToBottom b )
                 ]
 
+
+        -- boundingClientRectを使って正確な位置を取得
+getBoundingClientRect : Decoder (Float, Float)
+getBoundingClientRect =
+    Decode.map2 (\left top -> (left, top))
+        (Decode.field "left" Decode.float)
+        (Decode.field "top" Decode.float)
 
 viewDataList : String -> Html Msg
 viewDataList str =
