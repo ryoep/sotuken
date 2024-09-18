@@ -9789,44 +9789,43 @@ var $author$project$Main$viewAST = F4(
 						A2(
 							$author$project$Main$whenNotDragging,
 							model,
-							$author$project$Main$whenLeftButtonIsDown(
-								A5(
-									$elm$json$Json$Decode$map4,
-									F4(
-										function (pageX, pageY, offsetX, offsetY) {
-											var boundingY = pageY - offsetY;
-											var boundingX = pageX - offsetX;
-											return A2(
-												$author$project$Main$insideBrick,
+							A5(
+								$elm$json$Json$Decode$map4,
+								F4(
+									function (pageX, pageY, offsetX, offsetY) {
+										var boundingY = pageY - offsetY;
+										var boundingX = pageX - offsetX;
+										return A2(
+											$author$project$Main$insideBrick,
+											_Utils_Tuple2(x, y),
+											_Utils_Tuple2(boundingX, boundingY)) ? A2(
+											$author$project$Main$MsgLetMeRoot,
+											A2(
+												$author$project$Main$ASTxy,
 												_Utils_Tuple2(x, y),
-												_Utils_Tuple2(boundingX, boundingY)) ? A2(
-												$author$project$Main$MsgLetMeRoot,
-												A2(
-													$author$project$Main$ASTxy,
-													_Utils_Tuple2(x, y),
-													A3($author$project$Main$ASTne, n, b, r)),
-												_Utils_Tuple2(pageX, pageY)) : $author$project$Main$MsgNOP;
-										}),
-									A2(
-										$elm$json$Json$Decode$at,
-										_List_fromArray(
-											['changedTouches', '0', 'pageX']),
-										$elm$json$Json$Decode$float),
-									A2(
-										$elm$json$Json$Decode$at,
-										_List_fromArray(
-											['changedTouches', '0', 'pageY']),
-										$elm$json$Json$Decode$float),
-									A2(
-										$elm$json$Json$Decode$at,
-										_List_fromArray(
-											['changedTouches', '0', 'offsetX']),
-										$elm$json$Json$Decode$float),
-									A2(
-										$elm$json$Json$Decode$at,
-										_List_fromArray(
-											['changedTouches', '0', 'offsetY']),
-										$elm$json$Json$Decode$float))))),
+												A3($author$project$Main$ASTne, n, b, r)),
+											_Utils_Tuple2(pageX, pageY)) : $author$project$Main$MsgNOP;
+									}),
+								A2(
+									$elm$json$Json$Decode$at,
+									_List_fromArray(
+										['changedTouches', '0', 'pageX']),
+									$elm$json$Json$Decode$float),
+								A2(
+									$elm$json$Json$Decode$at,
+									_List_fromArray(
+										['changedTouches', '0', 'pageY']),
+									$elm$json$Json$Decode$float),
+								A2(
+									$elm$json$Json$Decode$at,
+									_List_fromArray(
+										['changedTouches', '0', 'offsetX']),
+									$elm$json$Json$Decode$float),
+								A2(
+									$elm$json$Json$Decode$at,
+									_List_fromArray(
+										['changedTouches', '0', 'offsetY']),
+									$elm$json$Json$Decode$float)))),
 						A2(
 						$author$project$Main$preventDefaultOn,
 						'contextmenu',
@@ -9924,9 +9923,8 @@ var $author$project$Main$viewASTRoot = F2(
 					A2(
 						$author$project$Main$whenDragging,
 						model,
-						$author$project$Main$whenLeftButtonIsDown(
-							$elm$json$Json$Decode$succeed(
-								$author$project$Main$MsgAttachMe(root))))),
+						$elm$json$Json$Decode$succeed(
+							$author$project$Main$MsgAttachMe(root)))),
 					A2(
 					$author$project$Main$on,
 					'mousedown',
@@ -9951,26 +9949,25 @@ var $author$project$Main$viewASTRoot = F2(
 					A2(
 						$author$project$Main$whenNotDragging,
 						model,
-						$author$project$Main$whenLeftButtonIsDown(
-							A3(
-								$elm$json$Json$Decode$map2,
-								F2(
-									function (pageX, pageY) {
-										return A2(
-											$author$project$Main$MsgStartDnD,
-											_Utils_Tuple2(x, y),
-											_Utils_Tuple2(pageX, pageY));
-									}),
-								A2(
-									$elm$json$Json$Decode$at,
-									_List_fromArray(
-										['changedTouches', '0', 'pageX']),
-									$elm$json$Json$Decode$float),
-								A2(
-									$elm$json$Json$Decode$at,
-									_List_fromArray(
-										['changedTouches', '0', 'pageY']),
-									$elm$json$Json$Decode$float))))),
+						A3(
+							$elm$json$Json$Decode$map2,
+							F2(
+								function (pageX, pageY) {
+									return A2(
+										$author$project$Main$MsgStartDnD,
+										_Utils_Tuple2(x, y),
+										_Utils_Tuple2(pageX, pageY));
+								}),
+							A2(
+								$elm$json$Json$Decode$at,
+								_List_fromArray(
+									['changedTouches', '0', 'pageX']),
+								$elm$json$Json$Decode$float),
+							A2(
+								$elm$json$Json$Decode$at,
+								_List_fromArray(
+									['changedTouches', '0', 'pageY']),
+								$elm$json$Json$Decode$float)))),
 					A2(
 					$author$project$Main$preventDefaultOn,
 					'contextmenu',

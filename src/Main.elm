@@ -1968,9 +1968,8 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
         -- touchend
         , on "touchend"
               <| whenDragging model
-                  <| whenLeftButtonIsDown
-                      <| Decode.succeed
-                          <| MsgAttachMe root
+                     <| Decode.succeed
+                        <| MsgAttachMe root
 
 
         -- mousedown
@@ -1987,12 +1986,11 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
         -- touchstart
         , on "touchstart"
               <| whenNotDragging model
-                  <| whenLeftButtonIsDown
                       -- MsgLetMeRootは根には無意味、代わりにMsgStartDnDを単独でセット
-                      <| Decode.map2
-                             (\pageX pageY -> MsgStartDnD ( x, y ) ( pageX, pageY ))
-                             (Decode.at ["changedTouches", "0", "pageX"] Decode.float)
-                             (Decode.at ["changedTouches", "0", "pageY"] Decode.float)
+                    <| Decode.map2
+                         (\pageX pageY -> MsgStartDnD ( x, y ) ( pageX, pageY ))
+                         (Decode.at ["changedTouches", "0", "pageX"] Decode.float)
+                         (Decode.at ["changedTouches", "0", "pageY"] Decode.float)
 
 
         -- contextmenu
@@ -2068,7 +2066,6 @@ viewAST model ( x, y ) direction ast =
                 -- touchstart
                 , on "touchstart"
                       <| whenNotDragging model
-                          <| whenLeftButtonIsDown
                               <| Decode.map4
                                   (\pageX pageY offsetX offsetY ->
                                       let
