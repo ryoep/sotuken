@@ -1841,8 +1841,8 @@ view model =
               <| whenDragging model
                   <| Decode.map2
                          (\pageX pageY -> MsgMoveUs ( pageX, pageY ))
-                         (Decode.at ["changedTouches", "0", "pageX"] Decode.float)
-                         (Decode.at ["changedTouches", "0", "pageY"] Decode.float)
+                         (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
+                         (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
 
         
         ]
@@ -1989,8 +1989,8 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                       -- MsgLetMeRootは根には無意味、代わりにMsgStartDnDを単独でセット
                     <| Decode.map2
                          (\pageX pageY -> MsgStartDnD ( x, y ) ( pageX, pageY ))
-                         (Decode.at ["changedTouches", "0", "pageX"] Decode.float)
-                         (Decode.at ["changedTouches", "0", "pageY"] Decode.float)
+                         (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
+                         (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
 
 
         -- contextmenu
@@ -2087,11 +2087,11 @@ viewAST model ( x, y ) direction ast =
                                                    ( pageX, pageY )
                                           else MsgNOP
                                   )
-                                  (Decode.at ["changedTouches", "0", "pageX"] Decode.float)
-                                  (Decode.at ["changedTouches", "0", "pageY"] Decode.float)
+                                  (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
+                                  (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
                                   -- 以下はターゲットがInputフォームかどうかの判定の計算にのみ使用
-                                  (Decode.at ["changedTouches", "0", "offsetX"] Decode.float)
-                                  (Decode.at ["changedTouches", "0", "offsetY"] Decode.float)
+                                  (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
+                                  (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
 
 
                 -- contextmenu
