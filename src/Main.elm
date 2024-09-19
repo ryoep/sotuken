@@ -1837,20 +1837,13 @@ view model =
                          (Decode.field "pageY" Decode.float)
         
 
-        -- 変更後のtouchmoveイベントの処理
+        -- touchmove
         , preventDefaultOn "touchmove"
             <| whenDragging model
-                <| Decode.map3
-                    (\pageX pageY (rectLeft, rectTop) ->
-                        let
-                            boundingX = pageX - rectLeft
-                            boundingY = pageY - rectTop
-                        in
-                            MsgMoveUs (boundingX, boundingY)
-                    )
-                    (Decode.at ["changedTouches", "0", "pageX"] Decode.float)
-                    (Decode.at ["changedTouches", "0", "pageY"] Decode.float)
-                    (Decode.at ["target", "getBoundingClientRect"] getBoundingClientRect)
+                <| Decode.map2
+                    (\clientX clientY -> MsgMoveUs (clientX, clientY))
+                    (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
+                    (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
 
         
         ]
@@ -1994,20 +1987,14 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                              (Decode.field "pageY" Decode.float)
 
 
-        -- 変更後のtouchstartイベントの処理
+        -- touchstart
         , on "touchstart"
             <| whenNotDragging model
-                <| Decode.map3
-                    (\pageX pageY (rectLeft, rectTop) ->
-                        let
-                            boundingX = pageX - rectLeft
-                            boundingY = pageY - rectTop
-                        in
-                            MsgStartDnD (x, y) (boundingX, boundingY)
-                    )
-                    (Decode.at ["changedTouches", "0", "pageX"] Decode.float)
-                    (Decode.at ["changedTouches", "0", "pageY"] Decode.float)
-                    (Decode.at ["target", "getBoundingClientRect"] getBoundingClientRect)
+                <| Decode.map2
+                    (\clientX clientY -> MsgStartDnD (x, y) (clientX, clientY))
+                    (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
+                    (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
+
 
 
 
@@ -2081,25 +2068,25 @@ viewAST model ( x, y ) direction ast =
                                   (Decode.field "offsetX" Decode.float)
                                   (Decode.field "offsetY" Decode.float)
 
-                -- 修正後のtouchstartイベントの処理
+                -- touchstart
                 , on "touchstart"
-                   <| whenNotDragging model
-                     <| Decode.map3
-                            (\pageX pageY (rectLeft, rectTop) ->
+                    <| whenNotDragging model
+                        -- ここも whenLeftButtonIsDown は不要
+                        <| Decode.map2
+                            (\clientX clientY ->
                                 let
-                                    boundingX = pageX - rectLeft
-                                    boundingY = pageY - rectTop
-                                 in
-                                    if insideBrick (x, y) (boundingX, boundingY) then
-                                        MsgLetMeRoot
-                                            (ASTxy (x, y) (ASTne n b r))
-                                            (pageX, pageY)
-                                    else
-                                        MsgNOP
+                                    -- clientX/Y をそのまま使用
+                                    boundingX = clientX
+                                    boundingY = clientY
+                                in
+                                    if insideBrick ( x, y ) ( boundingX, boundingY )
+                                    then MsgLetMeRoot
+                                            (ASTxy ( x, y ) (ASTne n b r))
+                                            ( clientX, clientY )
+                                    else MsgNOP
                             )
-                            (Decode.at ["changedTouches", "0", "pageX"] Decode.float)
-                            (Decode.at ["changedTouches", "0", "pageY"] Decode.float)
-                            (Decode.at ["target", "getBoundingClientRect"] getBoundingClientRect)
+                            (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
+                            (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
 
 
                 -- contextmenu

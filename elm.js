@@ -8580,14 +8580,6 @@ var $author$project$Main$createNewRoot = function (_v0) {
 		A3($author$project$Main$ASTne, node, $author$project$Main$Nil, $author$project$Main$Nil));
 };
 var $elm$html$Html$div = _VirtualDom_node('div');
-var $author$project$Main$getBoundingClientRect = A3(
-	$elm$json$Json$Decode$map2,
-	F2(
-		function (left, top) {
-			return _Utils_Tuple2(left, top);
-		}),
-	A2($elm$json$Json$Decode$field, 'left', $elm$json$Json$Decode$float),
-	A2($elm$json$Json$Decode$field, 'top', $elm$json$Json$Decode$float));
 var $elm$json$Json$Encode$bool = _Json_wrap;
 var $elm$html$Html$Attributes$boolProperty = F2(
 	function (key, bool) {
@@ -9797,14 +9789,12 @@ var $author$project$Main$viewAST = F4(
 						A2(
 							$author$project$Main$whenNotDragging,
 							model,
-							A4(
-								$elm$json$Json$Decode$map3,
-								F3(
-									function (pageX, pageY, _v4) {
-										var rectLeft = _v4.a;
-										var rectTop = _v4.b;
-										var boundingY = pageY - rectTop;
-										var boundingX = pageX - rectLeft;
+							A3(
+								$elm$json$Json$Decode$map2,
+								F2(
+									function (clientX, clientY) {
+										var boundingY = clientY;
+										var boundingX = clientX;
 										return A2(
 											$author$project$Main$insideBrick,
 											_Utils_Tuple2(x, y),
@@ -9814,23 +9804,18 @@ var $author$project$Main$viewAST = F4(
 												$author$project$Main$ASTxy,
 												_Utils_Tuple2(x, y),
 												A3($author$project$Main$ASTne, n, b, r)),
-											_Utils_Tuple2(pageX, pageY)) : $author$project$Main$MsgNOP;
+											_Utils_Tuple2(clientX, clientY)) : $author$project$Main$MsgNOP;
 									}),
 								A2(
 									$elm$json$Json$Decode$at,
 									_List_fromArray(
-										['changedTouches', '0', 'pageX']),
+										['changedTouches', '0', 'clientX']),
 									$elm$json$Json$Decode$float),
 								A2(
 									$elm$json$Json$Decode$at,
 									_List_fromArray(
-										['changedTouches', '0', 'pageY']),
-									$elm$json$Json$Decode$float),
-								A2(
-									$elm$json$Json$Decode$at,
-									_List_fromArray(
-										['target', 'getBoundingClientRect']),
-									$author$project$Main$getBoundingClientRect)))),
+										['changedTouches', '0', 'clientY']),
+									$elm$json$Json$Decode$float)))),
 						A2(
 						$author$project$Main$preventDefaultOn,
 						'contextmenu',
@@ -9954,34 +9939,25 @@ var $author$project$Main$viewASTRoot = F2(
 					A2(
 						$author$project$Main$whenNotDragging,
 						model,
-						A4(
-							$elm$json$Json$Decode$map3,
-							F3(
-								function (pageX, pageY, _v2) {
-									var rectLeft = _v2.a;
-									var rectTop = _v2.b;
-									var boundingY = pageY - rectTop;
-									var boundingX = pageX - rectLeft;
+						A3(
+							$elm$json$Json$Decode$map2,
+							F2(
+								function (clientX, clientY) {
 									return A2(
 										$author$project$Main$MsgStartDnD,
 										_Utils_Tuple2(x, y),
-										_Utils_Tuple2(boundingX, boundingY));
+										_Utils_Tuple2(clientX, clientY));
 								}),
 							A2(
 								$elm$json$Json$Decode$at,
 								_List_fromArray(
-									['changedTouches', '0', 'pageX']),
+									['changedTouches', '0', 'clientX']),
 								$elm$json$Json$Decode$float),
 							A2(
 								$elm$json$Json$Decode$at,
 								_List_fromArray(
-									['changedTouches', '0', 'pageY']),
-								$elm$json$Json$Decode$float),
-							A2(
-								$elm$json$Json$Decode$at,
-								_List_fromArray(
-									['target', 'getBoundingClientRect']),
-								$author$project$Main$getBoundingClientRect)))),
+									['changedTouches', '0', 'clientY']),
+								$elm$json$Json$Decode$float)))),
 					A2(
 					$author$project$Main$preventDefaultOn,
 					'contextmenu',
@@ -10132,32 +10108,23 @@ var $author$project$Main$view = function (model) {
 				A2(
 					$author$project$Main$whenDragging,
 					model,
-					A4(
-						$elm$json$Json$Decode$map3,
-						F3(
-							function (pageX, pageY, _v0) {
-								var rectLeft = _v0.a;
-								var rectTop = _v0.b;
-								var boundingY = pageY - rectTop;
-								var boundingX = pageX - rectLeft;
+					A3(
+						$elm$json$Json$Decode$map2,
+						F2(
+							function (clientX, clientY) {
 								return $author$project$Main$MsgMoveUs(
-									_Utils_Tuple2(boundingX, boundingY));
+									_Utils_Tuple2(clientX, clientY));
 							}),
 						A2(
 							$elm$json$Json$Decode$at,
 							_List_fromArray(
-								['changedTouches', '0', 'pageX']),
+								['changedTouches', '0', 'clientX']),
 							$elm$json$Json$Decode$float),
 						A2(
 							$elm$json$Json$Decode$at,
 							_List_fromArray(
-								['changedTouches', '0', 'pageY']),
-							$elm$json$Json$Decode$float),
-						A2(
-							$elm$json$Json$Decode$at,
-							_List_fromArray(
-								['target', 'getBoundingClientRect']),
-							$author$project$Main$getBoundingClientRect))))
+								['changedTouches', '0', 'clientY']),
+							$elm$json$Json$Decode$float))))
 			]),
 		_List_fromArray(
 			[
