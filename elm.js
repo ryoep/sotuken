@@ -10219,7 +10219,7 @@ var $author$project$Main$view = function (model) {
 											]),
 										_List_fromArray(
 											[
-												$elm$html$Html$text('つくる')
+												$elm$html$Html$text('マーカス')
 											])),
 										$elm$html$Html$text(
 										$elm$core$String$fromInt(
@@ -10230,7 +10230,7 @@ var $author$project$Main$view = function (model) {
 								_List_Nil,
 								_List_fromArray(
 									[
-										$elm$html$Html$text('さいしょのx座標 : '),
+										$elm$html$Html$text('ブルーの : '),
 										A2(
 										$elm$html$Html$input,
 										_List_fromArray(

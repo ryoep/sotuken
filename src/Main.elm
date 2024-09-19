@@ -1897,7 +1897,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "ラッシュフォード"
+                        , placeholder "ラッシュフォード"--新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -1905,13 +1905,13 @@ view model =
                     , text model.routineBox
                     , button
                         [ Decode.succeed MsgMakeNewRoutine |> on "click" ]
-                        [ text "つくる" ]
+                        [ text "マーカス" ]--作る
                     
                     , text (String.fromInt (List.length model.turtle.callStack)) -- デバッグ用 消してOK
                     ]
                 , div
                     []
-                    [ text "さいしょのx座標 : "
+                    [ text "ブルーの : " --さいしょのx座標
                     , input
                       [ style "width" "50px"
                         --, placeholder "さいしょのx座標"
