@@ -1901,7 +1901,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "新しい関数名"
+                        , placeholder "マーカス" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -1999,24 +1999,11 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                   <| Decode.succeed MsgDblClick
 
 
+        -- タッチで複製する処理 (2本指タッチで複製)
         , preventDefaultOn "touchstart"
             <| whenNotDragging model
-                <| Decode.map
-                        (\touches ->
-                            if List.length touches == 2 then
-                                MsgCloneUs (ASTxy ( x, y ) (ASTne n b r))
-
-                            else
-                                NoAction
-                        )
-                        (Decode.field "changedTouches" 
-                            (Decode.list 
-                                (Decode.map2 (\touchX touchY -> (touchX, touchY))  -- 変数名を touchX と touchY に変更
-                                    (Decode.at [ "clientX" ] Decode.float)
-                                    (Decode.at [ "clientY" ] Decode.float)
-                                )
-                            )
-                        )
+                <| Decode.map (\_ -> MsgCloneUs (ASTxy ( x, y ) (ASTne n b r)))
+                <| decodeTouches
 
 
 
@@ -2026,6 +2013,16 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
         , ( "B", lazy4 viewAST model (x, y + interval model ) ToBottom b )
         ]
 
+decodeTouches : Decode.Decoder Msg
+decodeTouches =
+    Decode.field "changedTouches" (Decode.list Decode.value)
+        |> Decode.andThen
+            (\touches ->
+                if List.length touches == 2 then
+                    Decode.succeed MsgDblClick  -- ここで複製メッセージを送信
+                else
+                    Decode.fail "Not a two-finger touch"
+            )
 
 -- 根以外の木の再帰的描画
 viewAST : Model -> Position -> Direction -> AST Node -> Html Msg
