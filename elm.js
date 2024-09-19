@@ -8769,6 +8769,7 @@ var $author$project$Main$MsgCloneUs = function (a) {
 	return {$: 'MsgCloneUs', a: a};
 };
 var $author$project$Main$MsgDblClick = {$: 'MsgDblClick'};
+var $author$project$Main$MsgNOP = {$: 'MsgNOP'};
 var $author$project$Main$MsgStartDnD = F2(
 	function (a, b) {
 		return {$: 'MsgStartDnD', a: a, b: b};
@@ -8779,11 +8780,11 @@ var $elm$virtual_dom$VirtualDom$lazy3 = _VirtualDom_lazy3;
 var $elm$html$Html$Lazy$lazy3 = $elm$virtual_dom$VirtualDom$lazy3;
 var $elm$virtual_dom$VirtualDom$lazy4 = _VirtualDom_lazy4;
 var $elm$html$Html$Lazy$lazy4 = $elm$virtual_dom$VirtualDom$lazy4;
+var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $author$project$Main$MsgLetMeRoot = F2(
 	function (a, b) {
 		return {$: 'MsgLetMeRoot', a: a, b: b};
 	});
-var $author$project$Main$MsgNOP = {$: 'MsgNOP'};
 var $author$project$Main$MsgCheckString = F3(
 	function (a, b, c) {
 		return {$: 'MsgCheckString', a: a, b: b, c: c};
@@ -9942,7 +9943,26 @@ var $author$project$Main$viewASTRoot = F2(
 					$author$project$Main$on,
 					'dblclick',
 					$author$project$Main$whenLeftButtonIsDown(
-						$elm$json$Json$Decode$succeed($author$project$Main$MsgDblClick)))
+						$elm$json$Json$Decode$succeed($author$project$Main$MsgDblClick))),
+					A2(
+					$author$project$Main$preventDefaultOn,
+					'touchstart',
+					A2(
+						$author$project$Main$whenNotDragging,
+						model,
+						A2(
+							$elm$json$Json$Decode$map,
+							function (touches) {
+								return ($elm$core$List$length(touches) === 2) ? $author$project$Main$MsgCloneUs(
+									A2(
+										$author$project$Main$ASTxy,
+										_Utils_Tuple2(x, y),
+										A3($author$project$Main$ASTne, n, b, r))) : $author$project$Main$MsgNOP;
+							},
+							A2(
+								$elm$json$Json$Decode$field,
+								'changedTouches',
+								$elm$json$Json$Decode$list($elm$json$Json$Decode$value)))))
 				]),
 			_List_fromArray(
 				[

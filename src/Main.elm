@@ -2002,6 +2002,20 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
         , on "dblclick"
               <| whenLeftButtonIsDown
                   <| Decode.succeed MsgDblClick
+
+
+        -- touch複製: 2本指タッチで複製
+        , preventDefaultOn "touchstart"
+            <| whenNotDragging model
+                <| Decode.map
+                        (\touches ->
+                            if List.length touches == 2 then
+                                MsgCloneUs (ASTxy ( x, y ) (ASTne n b r))
+                            else
+                                MsgNOP  -- なにもせずに無視
+                        )
+                        (Decode.field "changedTouches" (Decode.list Decode.value))
+
         ]
         [ ( "N", lazy3 viewBrick model ( x, y ) n)
         , ( "R", lazy4 viewAST model ( x + interval model, y ) ToRight r )
