@@ -23,7 +23,6 @@ import Process exposing (..)
 import File exposing (File)
 import File.Download as Download
 import File.Select as Select
-import Html.Events exposing (on)
 
 main : Program () Model Msg
 main =
@@ -1835,21 +1834,18 @@ view model =
                          (\pageX pageY -> MsgMoveUs ( pageX, pageY ))
                          (Decode.field "pageX" Decode.float)
                          (Decode.field "pageY" Decode.float)
-        
+
 
         -- touchmove
         , preventDefaultOn "touchmove"
-            <| whenDragging model
-                <| Decode.map2
-                    (\clientX clientY -> MsgMoveUs (clientX, clientY))
-                    (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
-                    (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
+              <| whenDragging model
+                  <| Decode.map2
+                         (\pageX pageY -> MsgMoveUs ( pageX, pageY ))
+                         (Decode.at ["changedTouches", "0", "pageX"] Decode.float)
+                         (Decode.at ["changedTouches", "0", "pageY"] Decode.float)
 
         
         ]
-
-
-
         [ div
             [ class "column is-one-quarter"
             , style "background-color" "orange"
@@ -1961,7 +1957,6 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
         [ style "position" "absolute"
         , style "top" (String.fromFloat y ++ "px")
         , style "left" (String.fromFloat x ++ "px")
-
         -- mouseup
         , on "mouseup"
               <| whenDragging model
@@ -1972,8 +1967,9 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
         -- touchend
         , on "touchend"
               <| whenDragging model
-                     <| Decode.succeed
-                        <| MsgAttachMe root
+                  <| whenLeftButtonIsDown
+                      <| Decode.succeed
+                          <| MsgAttachMe root
 
 
         -- mousedown
@@ -1986,16 +1982,14 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                              (Decode.field "pageX" Decode.float)
                              (Decode.field "pageY" Decode.float)
 
-
         -- touchstart
         , on "touchstart"
-            <| whenNotDragging model
-                <| Decode.map2
-                    (\clientX clientY -> MsgStartDnD (x, y) (clientX, clientY))
-                    (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
-                    (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
-
-
+              <| whenNotDragging model
+                      -- MsgLetMeRootは根には無意味、代わりにMsgStartDnDを単独でセット
+                      <| Decode.map2
+                             (\pageX pageY -> MsgStartDnD ( x, y ) ( pageX, pageY ))
+                             (Decode.at ["changedTouches", "0", "pageX"] Decode.float)
+                             (Decode.at ["changedTouches", "0", "pageY"] Decode.float)
 
 
         -- contextmenu
@@ -2067,28 +2061,6 @@ viewAST model ( x, y ) direction ast =
                                   -- 以下はターゲットがInputフォームかどうかの判定の計算にのみ使用
                                   (Decode.field "offsetX" Decode.float)
                                   (Decode.field "offsetY" Decode.float)
-
-                -- touchstart
-                , on "touchstart"
-                    <| whenNotDragging model
-                        -- ここも whenLeftButtonIsDown は不要
-                        <| Decode.map2
-                            (\clientX clientY ->
-                                let
-                                    -- clientX/Y をそのまま使用
-                                    boundingX = clientX
-                                    boundingY = clientY
-                                in
-                                    if insideBrick ( x, y ) ( boundingX, boundingY )
-                                    then MsgLetMeRoot
-                                            (ASTxy ( x, y ) (ASTne n b r))
-                                            ( clientX, clientY )
-                                    else MsgNOP
-                            )
-                            (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
-                            (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
-
-
                 -- contextmenu
                 -- コンテクストメニューが開かないようにpreventDefaultが必要
                 , preventDefaultOn "contextmenu"
@@ -2102,13 +2074,6 @@ viewAST model ( x, y ) direction ast =
                 , ( "B", lazy4 viewAST model ( x, y + interval model ) ToBottom b )
                 ]
 
-
-        -- boundingClientRectを使って正確な位置を取得
-getBoundingClientRect : Decoder (Float, Float)
-getBoundingClientRect =
-    Decode.map2 (\left top -> (left, top))
-        (Decode.field "left" Decode.float)
-        (Decode.field "top" Decode.float)
 
 viewDataList : String -> Html Msg
 viewDataList str =

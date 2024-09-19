@@ -9784,39 +9784,6 @@ var $author$project$Main$viewAST = F4(
 									A2($elm$json$Json$Decode$field, 'offsetX', $elm$json$Json$Decode$float),
 									A2($elm$json$Json$Decode$field, 'offsetY', $elm$json$Json$Decode$float))))),
 						A2(
-						$author$project$Main$on,
-						'touchstart',
-						A2(
-							$author$project$Main$whenNotDragging,
-							model,
-							A3(
-								$elm$json$Json$Decode$map2,
-								F2(
-									function (clientX, clientY) {
-										var boundingY = clientY;
-										var boundingX = clientX;
-										return A2(
-											$author$project$Main$insideBrick,
-											_Utils_Tuple2(x, y),
-											_Utils_Tuple2(boundingX, boundingY)) ? A2(
-											$author$project$Main$MsgLetMeRoot,
-											A2(
-												$author$project$Main$ASTxy,
-												_Utils_Tuple2(x, y),
-												A3($author$project$Main$ASTne, n, b, r)),
-											_Utils_Tuple2(clientX, clientY)) : $author$project$Main$MsgNOP;
-									}),
-								A2(
-									$elm$json$Json$Decode$at,
-									_List_fromArray(
-										['changedTouches', '0', 'clientX']),
-									$elm$json$Json$Decode$float),
-								A2(
-									$elm$json$Json$Decode$at,
-									_List_fromArray(
-										['changedTouches', '0', 'clientY']),
-									$elm$json$Json$Decode$float)))),
-						A2(
 						$author$project$Main$preventDefaultOn,
 						'contextmenu',
 						A2(
@@ -9913,8 +9880,9 @@ var $author$project$Main$viewASTRoot = F2(
 					A2(
 						$author$project$Main$whenDragging,
 						model,
-						$elm$json$Json$Decode$succeed(
-							$author$project$Main$MsgAttachMe(root)))),
+						$author$project$Main$whenLeftButtonIsDown(
+							$elm$json$Json$Decode$succeed(
+								$author$project$Main$MsgAttachMe(root))))),
 					A2(
 					$author$project$Main$on,
 					'mousedown',
@@ -9942,21 +9910,21 @@ var $author$project$Main$viewASTRoot = F2(
 						A3(
 							$elm$json$Json$Decode$map2,
 							F2(
-								function (clientX, clientY) {
+								function (pageX, pageY) {
 									return A2(
 										$author$project$Main$MsgStartDnD,
 										_Utils_Tuple2(x, y),
-										_Utils_Tuple2(clientX, clientY));
+										_Utils_Tuple2(pageX, pageY));
 								}),
 							A2(
 								$elm$json$Json$Decode$at,
 								_List_fromArray(
-									['changedTouches', '0', 'clientX']),
+									['changedTouches', '0', 'pageX']),
 								$elm$json$Json$Decode$float),
 							A2(
 								$elm$json$Json$Decode$at,
 								_List_fromArray(
-									['changedTouches', '0', 'clientY']),
+									['changedTouches', '0', 'pageY']),
 								$elm$json$Json$Decode$float)))),
 					A2(
 					$author$project$Main$preventDefaultOn,
@@ -10111,19 +10079,19 @@ var $author$project$Main$view = function (model) {
 					A3(
 						$elm$json$Json$Decode$map2,
 						F2(
-							function (clientX, clientY) {
+							function (pageX, pageY) {
 								return $author$project$Main$MsgMoveUs(
-									_Utils_Tuple2(clientX, clientY));
+									_Utils_Tuple2(pageX, pageY));
 							}),
 						A2(
 							$elm$json$Json$Decode$at,
 							_List_fromArray(
-								['changedTouches', '0', 'clientX']),
+								['changedTouches', '0', 'pageX']),
 							$elm$json$Json$Decode$float),
 						A2(
 							$elm$json$Json$Decode$at,
 							_List_fromArray(
-								['changedTouches', '0', 'clientY']),
+								['changedTouches', '0', 'pageY']),
 							$elm$json$Json$Decode$float))))
 			]),
 		_List_fromArray(
