@@ -8777,16 +8777,6 @@ var $author$project$Main$MsgStartDnD = F2(
 	});
 var $author$project$Main$ToBottom = {$: 'ToBottom'};
 var $author$project$Main$ToRight = {$: 'ToRight'};
-var $elm$json$Json$Decode$value = _Json_decodeValue;
-var $author$project$Main$decodeTouches = A2(
-	$elm$json$Json$Decode$andThen,
-	function (touches) {
-		return ($elm$core$List$length(touches) === 2) ? $elm$json$Json$Decode$succeed($author$project$Main$MsgDblClick) : $elm$json$Json$Decode$fail('Not a two-finger touch');
-	},
-	A2(
-		$elm$json$Json$Decode$field,
-		'changedTouches',
-		$elm$json$Json$Decode$list($elm$json$Json$Decode$value)));
 var $elm$virtual_dom$VirtualDom$lazy3 = _VirtualDom_lazy3;
 var $elm$html$Html$Lazy$lazy3 = $elm$virtual_dom$VirtualDom$lazy3;
 var $elm$virtual_dom$VirtualDom$lazy4 = _VirtualDom_lazy4;
@@ -9913,6 +9903,31 @@ var $author$project$Main$viewASTRoot = F2(
 								A2($elm$json$Json$Decode$field, 'pageX', $elm$json$Json$Decode$float),
 								A2($elm$json$Json$Decode$field, 'pageY', $elm$json$Json$Decode$float))))),
 					A2(
+					$author$project$Main$on,
+					'touchstart',
+					A2(
+						$author$project$Main$whenNotDragging,
+						model,
+						A3(
+							$elm$json$Json$Decode$map2,
+							F2(
+								function (clientX, clientY) {
+									return A2(
+										$author$project$Main$MsgStartDnD,
+										_Utils_Tuple2(x, y),
+										_Utils_Tuple2(clientX, clientY));
+								}),
+							A2(
+								$elm$json$Json$Decode$at,
+								_List_fromArray(
+									['changedTouches', '0', 'clientX']),
+								$elm$json$Json$Decode$float),
+							A2(
+								$elm$json$Json$Decode$at,
+								_List_fromArray(
+									['changedTouches', '0', 'clientY']),
+								$elm$json$Json$Decode$float)))),
+					A2(
 					$author$project$Main$preventDefaultOn,
 					'contextmenu',
 					A2(
@@ -9929,23 +9944,7 @@ var $author$project$Main$viewASTRoot = F2(
 					$author$project$Main$on,
 					'dblclick',
 					$author$project$Main$whenLeftButtonIsDown(
-						$elm$json$Json$Decode$succeed($author$project$Main$MsgDblClick))),
-					A2(
-					$author$project$Main$preventDefaultOn,
-					'touchstart',
-					A2(
-						$author$project$Main$whenNotDragging,
-						model,
-						A2(
-							$elm$json$Json$Decode$map,
-							function (_v2) {
-								return $author$project$Main$MsgCloneUs(
-									A2(
-										$author$project$Main$ASTxy,
-										_Utils_Tuple2(x, y),
-										A3($author$project$Main$ASTne, n, b, r)));
-							},
-							$author$project$Main$decodeTouches)))
+						$elm$json$Json$Decode$succeed($author$project$Main$MsgDblClick)))
 				]),
 			_List_fromArray(
 				[
@@ -10081,19 +10080,19 @@ var $author$project$Main$view = function (model) {
 					A3(
 						$elm$json$Json$Decode$map2,
 						F2(
-							function (pageX, pageY) {
+							function (clientX, clientY) {
 								return $author$project$Main$MsgMoveUs(
-									_Utils_Tuple2(pageX, pageY));
+									_Utils_Tuple2(clientX, clientY));
 							}),
 						A2(
 							$elm$json$Json$Decode$at,
 							_List_fromArray(
-								['changedTouches', '0', 'pageX']),
+								['changedTouches', '0', 'clientX']),
 							$elm$json$Json$Decode$float),
 						A2(
 							$elm$json$Json$Decode$at,
 							_List_fromArray(
-								['changedTouches', '0', 'pageY']),
+								['changedTouches', '0', 'clientY']),
 							$elm$json$Json$Decode$float))))
 			]),
 		_List_fromArray(
@@ -10206,7 +10205,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('マーカス'),
+												$elm$html$Html$Attributes$placeholder('新しい関数名'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(

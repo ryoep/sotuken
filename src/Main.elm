@@ -1840,13 +1840,14 @@ view model =
                          (Decode.field "pageY" Decode.float)
 
 
+
         -- touchmove
         , preventDefaultOn "touchmove"
-              <| whenDragging model
-                  <| Decode.map2
-                         (\pageX pageY -> MsgMoveUs ( pageX, pageY ))
-                         (Decode.at ["changedTouches", "0", "pageX"] Decode.float)
-                         (Decode.at ["changedTouches", "0", "pageY"] Decode.float)
+            <| whenDragging model
+                <| Decode.map2
+                    (\clientX clientY -> MsgMoveUs (clientX, clientY))
+                    (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
+                    (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
 
         
         ]
@@ -1901,7 +1902,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "マーカス" --新しい関数名
+                        , placeholder "新しい関数名" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -1986,6 +1987,15 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                              (Decode.field "pageY" Decode.float)
 
 
+        -- touchstart
+        , on "touchstart"
+            <| whenNotDragging model
+                <| Decode.map2
+                    (\clientX clientY -> MsgStartDnD (x, y) (clientX, clientY))
+                    (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
+                    (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
+
+
         -- contextmenu
         -- コンテクストメニューが開かないようにpreventDefaultが必要
         , preventDefaultOn "contextmenu"
@@ -1999,13 +2009,6 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                   <| Decode.succeed MsgDblClick
 
 
-        -- タッチで複製する処理 (2本指タッチで複製)
-        , preventDefaultOn "touchstart"
-            <| whenNotDragging model
-                <| Decode.map (\_ -> MsgCloneUs (ASTxy ( x, y ) (ASTne n b r)))
-                <| decodeTouches
-
-
 
         ]
         [ ( "N", lazy3 viewBrick model ( x, y ) n)
@@ -2013,16 +2016,6 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
         , ( "B", lazy4 viewAST model (x, y + interval model ) ToBottom b )
         ]
 
-decodeTouches : Decode.Decoder Msg
-decodeTouches =
-    Decode.field "changedTouches" (Decode.list Decode.value)
-        |> Decode.andThen
-            (\touches ->
-                if List.length touches == 2 then
-                    Decode.succeed MsgDblClick  -- ここで複製メッセージを送信
-                else
-                    Decode.fail "Not a two-finger touch"
-            )
 
 -- 根以外の木の再帰的描画
 viewAST : Model -> Position -> Direction -> AST Node -> Html Msg
