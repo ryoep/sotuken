@@ -1981,15 +1981,6 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                              (Decode.field "pageX" Decode.float)
                              (Decode.field "pageY" Decode.float)
 
-        -- touchstart
-        , preventDefaultOn "touchstart"
-              <| whenNotDragging model
-                      -- MsgLetMeRootは根には無意味、代わりにMsgStartDnDを単独でセット
-                      <| Decode.map2
-                             (\pageX pageY -> MsgStartDnD ( x, y ) ( pageX, pageY ))
-                             (Decode.at ["changedTouches", "0", "pageX"] Decode.float)
-                             (Decode.at ["changedTouches", "0", "pageY"] Decode.float)
-
 
         -- contextmenu
         -- コンテクストメニューが開かないようにpreventDefaultが必要

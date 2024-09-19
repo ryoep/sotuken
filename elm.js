@@ -9903,31 +9903,6 @@ var $author$project$Main$viewASTRoot = F2(
 								A2($elm$json$Json$Decode$field, 'pageY', $elm$json$Json$Decode$float))))),
 					A2(
 					$author$project$Main$preventDefaultOn,
-					'touchstart',
-					A2(
-						$author$project$Main$whenNotDragging,
-						model,
-						A3(
-							$elm$json$Json$Decode$map2,
-							F2(
-								function (pageX, pageY) {
-									return A2(
-										$author$project$Main$MsgStartDnD,
-										_Utils_Tuple2(x, y),
-										_Utils_Tuple2(pageX, pageY));
-								}),
-							A2(
-								$elm$json$Json$Decode$at,
-								_List_fromArray(
-									['changedTouches', '0', 'pageX']),
-								$elm$json$Json$Decode$float),
-							A2(
-								$elm$json$Json$Decode$at,
-								_List_fromArray(
-									['changedTouches', '0', 'pageY']),
-								$elm$json$Json$Decode$float)))),
-					A2(
-					$author$project$Main$preventDefaultOn,
 					'contextmenu',
 					A2(
 						$author$project$Main$whenNotDragging,
