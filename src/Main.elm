@@ -377,6 +377,7 @@ subscriptions model =
 
 type Msg
     = MsgCloneUs (ASTxy Node)
+    | NoAction
     | MsgLetMeRoot (ASTxy Node) Position
     | MsgMoveUs Position
     | MsgAttachMe (ASTxy Node)
@@ -455,6 +456,9 @@ update msg model =
     case msg of
         MsgCloneUs ast ->
             ( cloneUs ast model, Cmd.none )
+        NoAction ->
+            -- NoAction では何もせずそのまま model を返す
+            (model, Cmd.none)
         MsgStartDnD rootXY mouseXY ->
             ( startDnD rootXY mouseXY model, Cmd.none )
         MsgLetMeRoot (ASTxy rootXY ast) mouseXY ->
@@ -1897,7 +1901,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "ラッシュフォード"--新しい関数名
+                        , placeholder "新しい関数名"
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -1905,13 +1909,13 @@ view model =
                     , text model.routineBox
                     , button
                         [ Decode.succeed MsgMakeNewRoutine |> on "click" ]
-                        [ text "マーカス" ]--作る
+                        [ text "作る" ]
                     
                     , text (String.fromInt (List.length model.turtle.callStack)) -- デバッグ用 消してOK
                     ]
                 , div
                     []
-                    [ text "ブルーの : " --さいしょのx座標
+                    [ text "最初のx座標 : " 
                     , input
                       [ style "width" "50px"
                         --, placeholder "さいしょのx座標"
@@ -1995,17 +1999,26 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                   <| Decode.succeed MsgDblClick
 
 
-        -- touch複製: 2本指タッチで複製
         , preventDefaultOn "touchstart"
             <| whenNotDragging model
                 <| Decode.map
                         (\touches ->
                             if List.length touches == 2 then
                                 MsgCloneUs (ASTxy ( x, y ) (ASTne n b r))
+
                             else
-                                MsgNOP  -- なにもせずに無視
+                                NoAction
                         )
-                        (Decode.field "changedTouches" (Decode.list Decode.value))
+                        (Decode.field "changedTouches" 
+                            (Decode.list 
+                                (Decode.map2 (\touchX touchY -> (touchX, touchY))  -- 変数名を touchX と touchY に変更
+                                    (Decode.at [ "clientX" ] Decode.float)
+                                    (Decode.at [ "clientY" ] Decode.float)
+                                )
+                            )
+                        )
+
+
 
         ]
         [ ( "N", lazy3 viewBrick model ( x, y ) n)

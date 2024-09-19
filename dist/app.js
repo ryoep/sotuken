@@ -8399,6 +8399,8 @@ var $author$project$Main$update = F2(
 				return _Utils_Tuple2(
 					A2($author$project$Main$cloneUs, ast, model),
 					$elm$core$Platform$Cmd$none);
+			case 'NoAction':
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			case 'MsgStartDnD':
 				var rootXY = msg.a;
 				var mouseXY = msg.b;
@@ -8769,22 +8771,22 @@ var $author$project$Main$MsgCloneUs = function (a) {
 	return {$: 'MsgCloneUs', a: a};
 };
 var $author$project$Main$MsgDblClick = {$: 'MsgDblClick'};
-var $author$project$Main$MsgNOP = {$: 'MsgNOP'};
 var $author$project$Main$MsgStartDnD = F2(
 	function (a, b) {
 		return {$: 'MsgStartDnD', a: a, b: b};
 	});
+var $author$project$Main$NoAction = {$: 'NoAction'};
 var $author$project$Main$ToBottom = {$: 'ToBottom'};
 var $author$project$Main$ToRight = {$: 'ToRight'};
 var $elm$virtual_dom$VirtualDom$lazy3 = _VirtualDom_lazy3;
 var $elm$html$Html$Lazy$lazy3 = $elm$virtual_dom$VirtualDom$lazy3;
 var $elm$virtual_dom$VirtualDom$lazy4 = _VirtualDom_lazy4;
 var $elm$html$Html$Lazy$lazy4 = $elm$virtual_dom$VirtualDom$lazy4;
-var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $author$project$Main$MsgLetMeRoot = F2(
 	function (a, b) {
 		return {$: 'MsgLetMeRoot', a: a, b: b};
 	});
+var $author$project$Main$MsgNOP = {$: 'MsgNOP'};
 var $author$project$Main$MsgCheckString = F3(
 	function (a, b, c) {
 		return {$: 'MsgCheckString', a: a, b: b, c: c};
@@ -9932,12 +9934,28 @@ var $author$project$Main$viewASTRoot = F2(
 									A2(
 										$author$project$Main$ASTxy,
 										_Utils_Tuple2(x, y),
-										A3($author$project$Main$ASTne, n, b, r))) : $author$project$Main$MsgNOP;
+										A3($author$project$Main$ASTne, n, b, r))) : $author$project$Main$NoAction;
 							},
 							A2(
 								$elm$json$Json$Decode$field,
 								'changedTouches',
-								$elm$json$Json$Decode$list($elm$json$Json$Decode$value)))))
+								$elm$json$Json$Decode$list(
+									A3(
+										$elm$json$Json$Decode$map2,
+										F2(
+											function (touchX, touchY) {
+												return _Utils_Tuple2(touchX, touchY);
+											}),
+										A2(
+											$elm$json$Json$Decode$at,
+											_List_fromArray(
+												['clientX']),
+											$elm$json$Json$Decode$float),
+										A2(
+											$elm$json$Json$Decode$at,
+											_List_fromArray(
+												['clientY']),
+											$elm$json$Json$Decode$float)))))))
 				]),
 			_List_fromArray(
 				[
@@ -10198,7 +10216,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('ラッシュフォード'),
+												$elm$html$Html$Attributes$placeholder('新しい関数名'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(
@@ -10219,7 +10237,7 @@ var $author$project$Main$view = function (model) {
 											]),
 										_List_fromArray(
 											[
-												$elm$html$Html$text('マーカス')
+												$elm$html$Html$text('作る')
 											])),
 										$elm$html$Html$text(
 										$elm$core$String$fromInt(
@@ -10230,7 +10248,7 @@ var $author$project$Main$view = function (model) {
 								_List_Nil,
 								_List_fromArray(
 									[
-										$elm$html$Html$text('ブルーの : '),
+										$elm$html$Html$text('最初のx座標 : '),
 										A2(
 										$elm$html$Html$input,
 										_List_fromArray(
