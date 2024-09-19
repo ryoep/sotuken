@@ -9875,14 +9875,13 @@ var $author$project$Main$viewASTRoot = F2(
 							$elm$json$Json$Decode$succeed(
 								$author$project$Main$MsgAttachMe(root))))),
 					A2(
-					$author$project$Main$on,
+					$author$project$Main$preventDefaultOn,
 					'touchend',
 					A2(
 						$author$project$Main$whenDragging,
 						model,
-						$author$project$Main$whenLeftButtonIsDown(
-							$elm$json$Json$Decode$succeed(
-								$author$project$Main$MsgAttachMe(root))))),
+						$elm$json$Json$Decode$succeed(
+							$author$project$Main$MsgAttachMe(root)))),
 					A2(
 					$author$project$Main$on,
 					'mousedown',
@@ -9902,7 +9901,7 @@ var $author$project$Main$viewASTRoot = F2(
 								A2($elm$json$Json$Decode$field, 'pageX', $elm$json$Json$Decode$float),
 								A2($elm$json$Json$Decode$field, 'pageY', $elm$json$Json$Decode$float))))),
 					A2(
-					$author$project$Main$on,
+					$author$project$Main$preventDefaultOn,
 					'touchstart',
 					A2(
 						$author$project$Main$whenNotDragging,

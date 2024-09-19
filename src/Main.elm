@@ -1965,11 +1965,10 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                           <| MsgAttachMe root
 
         -- touchend
-        , on "touchend"
+        , preventDefaultOn "touchend"
               <| whenDragging model
-                  <| whenLeftButtonIsDown
-                      <| Decode.succeed
-                          <| MsgAttachMe root
+                    <| Decode.succeed
+                        <| MsgAttachMe root
 
 
         -- mousedown
@@ -1983,7 +1982,7 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                              (Decode.field "pageY" Decode.float)
 
         -- touchstart
-        , on "touchstart"
+        , preventDefaultOn "touchstart"
               <| whenNotDragging model
                       -- MsgLetMeRootは根には無意味、代わりにMsgStartDnDを単独でセット
                       <| Decode.map2
