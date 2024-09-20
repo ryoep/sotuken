@@ -1840,7 +1840,7 @@ view model =
                          (Decode.field "pageY" Decode.float)
 
 
-
+        -- 追加
         -- touchmove
         , preventDefaultOn "touchmove"
             <| whenDragging model
@@ -1902,7 +1902,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "新しい関数名" --新しい関数名
+                        , placeholder "マーカス" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -1910,7 +1910,7 @@ view model =
                     , text model.routineBox
                     , button
                         [ Decode.succeed MsgMakeNewRoutine |> on "click" ]
-                        [ text "作る" ]
+                        [ text "つくる" ]
                     
                     , text (String.fromInt (List.length model.turtle.callStack)) -- デバッグ用 消してOK
                     ]
@@ -1969,6 +1969,7 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                       <| Decode.succeed
                           <| MsgAttachMe root
 
+        -- 追加
         -- touchend
         , preventDefaultOn "touchend"
               <| whenDragging model
@@ -1986,7 +1987,7 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                              (Decode.field "pageX" Decode.float)
                              (Decode.field "pageY" Decode.float)
 
-
+        -- 追加
         -- touchstart
         , on "touchstart"
             <| whenNotDragging model
@@ -2007,6 +2008,18 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
         , on "dblclick"
               <| whenLeftButtonIsDown
                   <| Decode.succeed MsgDblClick
+
+        -- 2本指タッチで複製
+        , preventDefaultOn "Duplicate"
+            <| whenNotDragging model
+                <| Decode.map
+                        (\touches ->
+                            if List.length touches == 2 then
+                                MsgCloneUs (ASTxy ( x, y ) (ASTne n b r))
+                            else
+                                NoAction
+                        )
+                        (Decode.field "changedTouches" (Decode.list Decode.value))
 
 
 
