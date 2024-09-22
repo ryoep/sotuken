@@ -1902,7 +1902,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "新しい関数名" --新しい関数名
+                        , placeholder "マーカス" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -2010,23 +2010,18 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                   <| Decode.succeed MsgDblClick
 
 
-        -- 2本指タッチで複製し、デフォルト動作を無効化
-        , preventDefaultOn "Duplicate"
+        -- タッチイベントのデコードと処理
+        , preventDefaultOn "touchstart"
             <| whenNotDragging model
-                <| (Decode.field "changedTouches"
-                        (Decode.list (Decode.map (\_ -> ( x, y )) Decode.value))  -- タプル (x, y) に変更
-                        |> Decode.andThen
-                            (\touches ->
-                                if List.length touches == 2 then
-                                    Decode.succeed (MsgCloneUs (ASTxy (x, y) (ASTne n b r))) -- x, y をタプルで渡す
-                                else
-                                    Decode.succeed NoAction
-                            )
+                <| (Decode.field "changedTouches" (Decode.list Decode.value)
+                    |> Decode.andThen
+                        (\touches ->
+                            if List.length touches == 2 then
+                                Decode.succeed (MsgCloneUs (ASTxy (x, y) (ASTne n b r)))
+                            else
+                                Decode.succeed NoAction
+                        )
                     )
-
-
-
-
 
 
 
