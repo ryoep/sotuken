@@ -1902,7 +1902,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "マーカス" --新しい関数名
+                        , placeholder "新しい関数名" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -2011,7 +2011,7 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
 
 
         -- タッチイベントのデコードと処理
-        , preventDefaultOn "touchstart"
+        , preventDefaultOn "Duplicate"
             <| whenNotDragging model
                 <| (Decode.field "changedTouches" (Decode.list Decode.value)
                     |> Decode.andThen
