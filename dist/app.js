@@ -6558,7 +6558,6 @@ var $author$project$Main$loadProgram = F2(
 			return model;
 		}
 	});
-var $elm$core$Debug$log = _Debug_log;
 var $author$project$Main$makeNewRoutine = function (model) {
 	var newEntryBrick = {
 		getBrickCommand: $author$project$Main$CommandNOP,
@@ -8397,12 +8396,9 @@ var $author$project$Main$update = F2(
 		switch (msg.$) {
 			case 'MsgCloneUs':
 				var ast = msg.a;
-				return A2(
-					$elm$core$Debug$log,
-					'MsgCloneUs received',
-					_Utils_Tuple2(
-						A2($author$project$Main$cloneUs, ast, model),
-						$elm$core$Platform$Cmd$none));
+				return _Utils_Tuple2(
+					A2($author$project$Main$cloneUs, ast, model),
+					$elm$core$Platform$Cmd$none);
 			case 'NoAction':
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			case 'MsgStartDnD':
@@ -8786,6 +8782,7 @@ var $elm$virtual_dom$VirtualDom$lazy3 = _VirtualDom_lazy3;
 var $elm$html$Html$Lazy$lazy3 = $elm$virtual_dom$VirtualDom$lazy3;
 var $elm$virtual_dom$VirtualDom$lazy4 = _VirtualDom_lazy4;
 var $elm$html$Html$Lazy$lazy4 = $elm$virtual_dom$VirtualDom$lazy4;
+var $elm$core$Debug$log = _Debug_log;
 var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $author$project$Main$MsgLetMeRoot = F2(
 	function (a, b) {
@@ -9955,22 +9952,20 @@ var $author$project$Main$viewASTRoot = F2(
 					$author$project$Main$preventDefaultOn,
 					'Duplicate',
 					A2(
-						$author$project$Main$whenNotDragging,
-						model,
+						$elm$json$Json$Decode$andThen,
+						function (touches) {
+							var _v2 = A2($elm$core$Debug$log, 'Touches detected', touches);
+							return ($elm$core$List$length(touches) === 2) ? $elm$json$Json$Decode$succeed(
+								$author$project$Main$MsgCloneUs(
+									A2(
+										$author$project$Main$ASTxy,
+										_Utils_Tuple2(x, y),
+										A3($author$project$Main$ASTne, n, b, r)))) : $elm$json$Json$Decode$succeed($author$project$Main$NoAction);
+						},
 						A2(
-							$elm$json$Json$Decode$andThen,
-							function (touches) {
-								return ($elm$core$List$length(touches) === 2) ? $elm$json$Json$Decode$succeed(
-									$author$project$Main$MsgCloneUs(
-										A2(
-											$author$project$Main$ASTxy,
-											_Utils_Tuple2(x, y),
-											A3($author$project$Main$ASTne, n, b, r)))) : $elm$json$Json$Decode$succeed($author$project$Main$NoAction);
-							},
-							A2(
-								$elm$json$Json$Decode$field,
-								'changedTouches',
-								$elm$json$Json$Decode$list($elm$json$Json$Decode$value)))))
+							$elm$json$Json$Decode$field,
+							'changedTouches',
+							$elm$json$Json$Decode$list($elm$json$Json$Decode$value))))
 				]),
 			_List_fromArray(
 				[
@@ -10231,7 +10226,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('マーカス'),
+												$elm$html$Html$Attributes$placeholder('新しい関数'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(

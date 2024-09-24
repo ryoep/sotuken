@@ -454,11 +454,10 @@ proceed =
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
-        MsgCloneUs ast ->
-            Debug.log "MsgCloneUs received" ( cloneUs ast model, Cmd.none )
-
         -- MsgCloneUs ast ->
-        --    ( cloneUs ast model, Cmd.none )
+        --    Debug.log "MsgCloneUs received" ( cloneUs ast model, Cmd.none )
+        MsgCloneUs ast ->
+            ( cloneUs ast model, Cmd.none )
         NoAction ->
             -- NoAction では何もせずそのまま model を返す
             (model, Cmd.none)
@@ -1905,7 +1904,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "マーカス" --新しい関数名
+                        , placeholder "新しい関数" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -2012,18 +2011,23 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
               <| whenLeftButtonIsDown
                   <| Decode.succeed MsgDblClick
 
-        -- タッチイベントのデコードと処理
+
+        -- 二本指タッチのデコードとデバッグログ
         , preventDefaultOn "Duplicate"
-            <| whenNotDragging model
-                <| (Decode.field "changedTouches" (Decode.list Decode.value)
-                    |> Decode.andThen
-                        (\touches ->
-                            if List.length touches == 2 then
-                                Decode.succeed (MsgCloneUs (ASTxy (x, y) (ASTne n b r)))
-                            else
-                                Decode.succeed NoAction
-                        )
-                    )
+            <| (Decode.field "changedTouches" (Decode.list Decode.value)
+                |> Decode.andThen (\touches ->
+                    let _ = Debug.log "Touches detected" touches
+                    in
+                    if List.length touches == 2 then
+                        -- 2本指タッチが検出されたときの処理
+                        Decode.succeed (MsgCloneUs (ASTxy (x, y) (ASTne n b r)))
+                    else
+                        -- 2本指でなかった場合の処理
+                        Decode.succeed NoAction
+                )
+            )
+
+
 
 
 
@@ -2096,6 +2100,9 @@ viewAST model ( x, y ) direction ast =
                           <| whenRightButtonIsDown
                               <| Decode.succeed
                                   <| MsgCloneUs (ASTxy ( x, y ) (ASTne n b r))
+
+
+
                 ]
                 [ ( "N", lazy3 viewBrick model ( x, y ) n ) -- 実際のブロックの描画はviewBrickで
                 , ( "R", lazy4 viewAST model ( x + interval model, y ) ToRight r )
