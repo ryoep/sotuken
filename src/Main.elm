@@ -1905,7 +1905,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "新しい関数名" --新しい関数名
+                        , placeholder "マーカス" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -2012,25 +2012,18 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
               <| whenLeftButtonIsDown
                   <| Decode.succeed MsgDblClick
 
-
-        , preventDefaultOn "Duplicate"
-            <| (whenNotDragging model
+        -- タッチイベントのデコードと処理
+        , preventDefaultOn "touchstart"
+            <| whenNotDragging model
                 <| (Decode.field "changedTouches" (Decode.list Decode.value)
                     |> Decode.andThen
                         (\touches ->
-                            let _ = Debug.log "Touches detected" touches -- タッチが正しく検出されているか確認
-                            in
                             if List.length touches == 2 then
                                 Decode.succeed (MsgCloneUs (ASTxy (x, y) (ASTne n b r)))
                             else
                                 Decode.succeed NoAction
                         )
-                )
-            )            
-
-
-
-
+                    )
 
 
 
@@ -2040,6 +2033,9 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
         , ( "R", lazy4 viewAST model ( x + interval model, y ) ToRight r )
         , ( "B", lazy4 viewAST model (x, y + interval model ) ToBottom b )
         ]
+
+
+
 
 
 -- 根以外の木の再帰的描画
