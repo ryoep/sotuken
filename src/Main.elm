@@ -1905,7 +1905,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "マーカス" --新しい関数名
+                        , placeholder "新しい関数名" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -2013,18 +2013,25 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                   <| Decode.succeed MsgDblClick
 
 
-        -- タッチイベントのデコードと処理
         , preventDefaultOn "Duplicate"
-            <| whenNotDragging model
+            <| (whenNotDragging model
                 <| (Decode.field "changedTouches" (Decode.list Decode.value)
                     |> Decode.andThen
                         (\touches ->
+                            let _ = Debug.log "Touches detected" touches -- タッチが正しく検出されているか確認
+                            in
                             if List.length touches == 2 then
                                 Decode.succeed (MsgCloneUs (ASTxy (x, y) (ASTne n b r)))
                             else
                                 Decode.succeed NoAction
                         )
-                    )
+                )
+            )            
+
+
+
+
+
 
 
 

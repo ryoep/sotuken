@@ -9960,6 +9960,7 @@ var $author$project$Main$viewASTRoot = F2(
 						A2(
 							$elm$json$Json$Decode$andThen,
 							function (touches) {
+								var _v2 = A2($elm$core$Debug$log, 'Touches detected', touches);
 								return ($elm$core$List$length(touches) === 2) ? $elm$json$Json$Decode$succeed(
 									$author$project$Main$MsgCloneUs(
 										A2(
@@ -10231,7 +10232,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('マーカス'),
+												$elm$html$Html$Attributes$placeholder('新しい関数名'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(
