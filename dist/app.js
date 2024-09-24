@@ -9953,7 +9953,7 @@ var $author$project$Main$viewASTRoot = F2(
 						$elm$json$Json$Decode$succeed($author$project$Main$MsgDblClick))),
 					A2(
 					$author$project$Main$preventDefaultOn,
-					'touchstart',
+					'Duplicate',
 					A2(
 						$author$project$Main$whenNotDragging,
 						model,

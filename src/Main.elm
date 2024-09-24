@@ -2013,7 +2013,7 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                   <| Decode.succeed MsgDblClick
 
         -- タッチイベントのデコードと処理
-        , preventDefaultOn "touchstart"
+        , preventDefaultOn "Duplicate"
             <| whenNotDragging model
                 <| (Decode.field "changedTouches" (Decode.list Decode.value)
                     |> Decode.andThen
