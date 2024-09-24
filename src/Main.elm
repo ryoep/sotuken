@@ -455,7 +455,10 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
         MsgCloneUs ast ->
-            ( cloneUs ast model, Cmd.none )
+            Debug.log "MsgCloneUs received" ( cloneUs ast model, Cmd.none )
+
+        -- MsgCloneUs ast ->
+        --    ( cloneUs ast model, Cmd.none )
         NoAction ->
             -- NoAction では何もせずそのまま model を返す
             (model, Cmd.none)

@@ -6558,6 +6558,7 @@ var $author$project$Main$loadProgram = F2(
 			return model;
 		}
 	});
+var $elm$core$Debug$log = _Debug_log;
 var $author$project$Main$makeNewRoutine = function (model) {
 	var newEntryBrick = {
 		getBrickCommand: $author$project$Main$CommandNOP,
@@ -8396,9 +8397,12 @@ var $author$project$Main$update = F2(
 		switch (msg.$) {
 			case 'MsgCloneUs':
 				var ast = msg.a;
-				return _Utils_Tuple2(
-					A2($author$project$Main$cloneUs, ast, model),
-					$elm$core$Platform$Cmd$none);
+				return A2(
+					$elm$core$Debug$log,
+					'MsgCloneUs received',
+					_Utils_Tuple2(
+						A2($author$project$Main$cloneUs, ast, model),
+						$elm$core$Platform$Cmd$none));
 			case 'NoAction':
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			case 'MsgStartDnD':
