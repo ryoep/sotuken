@@ -1904,7 +1904,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "マーカス" --新しい関数名
+                        , placeholder "新しい関数名" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -2014,22 +2014,25 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                   <| Decode.succeed MsgDblClick
 
 
+
         -- Duplicate: 2本指のタッチで複製
         , preventDefaultOn "Duplicate"
               <| whenNotDragging model
-                  <| Decode.andThen
+                  <| Decode.map
                       (\touches ->
                           let
                               touchCount = List.length touches
                           in
-                          Debug.log ("Touches detected: " ++ String.fromInt touchCount)
-                              (if touchCount == 2 then
-                                  Decode.succeed (MsgCloneUs (ASTxy ( x, y ) (ASTne n b r)))
-                               else
-                                  Decode.fail "Not a two-finger touch"
-                              )
+                          Debug.log ("Touches detected: " ++ String.fromInt touchCount) touches
+                              |> (\_ ->
+                                  if touchCount == 2 then
+                                      MsgCloneUs (ASTxy ( x, y ) (ASTne n b r))
+                                  else
+                                      -- エラー時には何もせず
+                                      NoAction
+                                 )
                       )
-                      (Decode.at ["changedTouches"] (Decode.list (Decode.map2 (\_ _ -> ()) (Decode.field "clientX" Decode.float) (Decode.field "clientY" Decode.float))))
+                      (Decode.at ["changedTouches"] (Decode.list (Decode.field "identifier" Decode.int)))
 
         ]
         [ ( "N", lazy3 viewBrick model ( x, y ) n)
