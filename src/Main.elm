@@ -2012,24 +2012,17 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                   <| Decode.succeed MsgDblClick
 
 
-        -- 二本指タッチのデコードとデバッグログ
+        -- 追加：2本指のタッチで複製
         , preventDefaultOn "Duplicate"
-            <| (Decode.field "changedTouches" (Decode.list Decode.value)
-                |> Decode.andThen (\touches ->
-                    let _ = Debug.log "Touches detected" touches
-                    in
-                    if List.length touches == 2 then
-                        -- 2本指タッチが検出されたときの処理
-                        Decode.succeed (MsgCloneUs (ASTxy (x, y) (ASTne n b r)))
-                    else
-                        -- 2本指でなかった場合の処理
-                        Decode.succeed NoAction
-                )
-            )
-
-
-
-
+              <| whenNotDragging model
+                  <| Decode.andThen
+                      (\touches ->
+                          if List.length touches == 2 then
+                              Decode.succeed <| MsgCloneUs (ASTxy ( x, y ) (ASTne n b r))
+                          else
+                              Decode.succeed NoAction
+                      )
+                      (Decode.field "changedTouches" (Decode.list Decode.value))
 
 
         ]
