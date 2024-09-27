@@ -1904,7 +1904,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "新しい関数名" --新しい関数名
+                        , placeholder "マーカス" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -2026,10 +2026,10 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                               (if touchCount == 2 then
                                   Decode.succeed (MsgCloneUs (ASTxy ( x, y ) (ASTne n b r)))
                                else
-                                  Decode.succeed NoAction
+                                  Decode.fail "Not a two-finger touch"
                               )
                       )
-                      (Decode.field "changedTouches" (Decode.list Decode.value))
+                      (Decode.at ["changedTouches"] (Decode.list (Decode.map2 (\_ _ -> ()) (Decode.field "clientX" Decode.float) (Decode.field "clientY" Decode.float))))
 
         ]
         [ ( "N", lazy3 viewBrick model ( x, y ) n)
