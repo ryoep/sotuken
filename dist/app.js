@@ -8782,6 +8782,7 @@ var $elm$virtual_dom$VirtualDom$lazy3 = _VirtualDom_lazy3;
 var $elm$html$Html$Lazy$lazy3 = $elm$virtual_dom$VirtualDom$lazy3;
 var $elm$virtual_dom$VirtualDom$lazy4 = _VirtualDom_lazy4;
 var $elm$html$Html$Lazy$lazy4 = $elm$virtual_dom$VirtualDom$lazy4;
+var $elm$core$Debug$log = _Debug_log;
 var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $author$project$Main$MsgLetMeRoot = F2(
 	function (a, b) {
@@ -9914,7 +9915,9 @@ var $author$project$Main$viewASTRoot = F2(
 							$elm$json$Json$Decode$map2,
 							F2(
 								function (clientX, clientY) {
-									return A2(
+									return A4(
+										$elm$core$Debug$log,
+										'Touch start detected',
 										$author$project$Main$MsgStartDnD,
 										_Utils_Tuple2(x, y),
 										_Utils_Tuple2(clientX, clientY));
@@ -9949,19 +9952,23 @@ var $author$project$Main$viewASTRoot = F2(
 						$elm$json$Json$Decode$succeed($author$project$Main$MsgDblClick))),
 					A2(
 					$author$project$Main$preventDefaultOn,
-					'touchend',
+					'Duplicate',
 					A2(
 						$author$project$Main$whenNotDragging,
 						model,
 						A2(
 							$elm$json$Json$Decode$andThen,
 							function (touches) {
-								return ($elm$core$List$length(touches) === 2) ? $elm$json$Json$Decode$succeed(
-									$author$project$Main$MsgCloneUs(
-										A2(
-											$author$project$Main$ASTxy,
-											_Utils_Tuple2(x, y),
-											A3($author$project$Main$ASTne, n, b, r)))) : $elm$json$Json$Decode$succeed($author$project$Main$NoAction);
+								var touchCount = $elm$core$List$length(touches);
+								return A2(
+									$elm$core$Debug$log,
+									'Touches detected: ' + $elm$core$String$fromInt(touchCount),
+									(touchCount === 2) ? $elm$json$Json$Decode$succeed(
+										$author$project$Main$MsgCloneUs(
+											A2(
+												$author$project$Main$ASTxy,
+												_Utils_Tuple2(x, y),
+												A3($author$project$Main$ASTne, n, b, r)))) : $elm$json$Json$Decode$succeed($author$project$Main$NoAction));
 							},
 							A2(
 								$elm$json$Json$Decode$field,
@@ -10227,7 +10234,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('マーカス'),
+												$elm$html$Html$Attributes$placeholder('新しい関数名'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(

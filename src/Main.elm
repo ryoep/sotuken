@@ -1904,7 +1904,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "マーカス" --新しい関数名
+                        , placeholder "新しい関数名" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -1989,12 +1989,14 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                              (Decode.field "pageX" Decode.float)
                              (Decode.field "pageY" Decode.float)
 
-        -- 追加
         -- touchstart
         , on "touchstart"
             <| whenNotDragging model
                 <| Decode.map2
-                    (\clientX clientY -> MsgStartDnD (x, y) (clientX, clientY))
+                    (\clientX clientY -> 
+                        Debug.log "Touch start detected"
+                        MsgStartDnD (x, y) (clientX, clientY)
+                    )
                     (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
                     (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
 
@@ -2012,18 +2014,22 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                   <| Decode.succeed MsgDblClick
 
 
-        -- 追加：2本指のタッチで複製
-        , preventDefaultOn "touchend"
+        -- Duplicate: 2本指のタッチで複製
+        , preventDefaultOn "Duplicate"
               <| whenNotDragging model
                   <| Decode.andThen
                       (\touches ->
-                          if List.length touches == 2 then
-                              Decode.succeed <| MsgCloneUs (ASTxy ( x, y ) (ASTne n b r))
-                          else
-                              Decode.succeed NoAction
+                          let
+                              touchCount = List.length touches
+                          in
+                          Debug.log ("Touches detected: " ++ String.fromInt touchCount)
+                              (if touchCount == 2 then
+                                  Decode.succeed (MsgCloneUs (ASTxy ( x, y ) (ASTne n b r)))
+                               else
+                                  Decode.succeed NoAction
+                              )
                       )
                       (Decode.field "changedTouches" (Decode.list Decode.value))
-
 
         ]
         [ ( "N", lazy3 viewBrick model ( x, y ) n)
