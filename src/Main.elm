@@ -377,7 +377,7 @@ subscriptions model =
 
 type Msg
     = MsgCloneUs (ASTxy Node)
-    | NoAction
+    | MsgNoOp
     | MsgLetMeRoot (ASTxy Node) Position
     | MsgMoveUs Position
     | MsgAttachMe (ASTxy Node)
@@ -458,7 +458,7 @@ update msg model =
         --    Debug.log "MsgCloneUs received" ( cloneUs ast model, Cmd.none )
         MsgCloneUs ast ->
             ( cloneUs ast model, Cmd.none )
-        NoAction ->
+        MsgNoOp ->
             -- NoAction では何もせずそのまま model を返す
             (model, Cmd.none)
         MsgStartDnD rootXY mouseXY ->
@@ -2014,35 +2014,32 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                   <| Decode.succeed MsgDblClick
 
 
-
         -- Duplicate: 2本指のタッチで複製
         , preventDefaultOn "Duplicate"
               <| whenNotDragging model
                   <| Decode.map
-                      (\touches ->
-                          let
-                              -- タッチ数の確認
-                              touchCount = List.length touches
-                          in
-                              -- タッチ数をデバッグログに表示
-                              Debug.log ("Touches detected: " ++ String.fromInt touchCount) touchCount
-                              |> (\_ ->
-                                  if touchCount == 2 then
-                                      MsgCloneUs (ASTxy ( x, y ) (ASTne n b r)) -- 2本指なら複製
-                                  else
-                                      NoAction -- それ以外は何もしない
-                                 )
+                      (\event ->
+                          -- タッチイベント全体をログに出力
+                          Debug.log "Touch Event Detected" event
+                          |> (\_ ->
+                              case Decode.decodeValue decodeTouches event of
+                                  Ok touches ->
+                                      let
+                                          touchCount = List.length touches
+                                      in
+                                          Debug.log ("Touches detected: " ++ String.fromInt touchCount) touchCount
+                                          |> (\_ ->
+                                              if touchCount == 2 then
+                                                  MsgCloneUs (ASTxy ( x, y ) (ASTne n b r)) -- 2本指なら複製
+                                              else
+                                                  MsgNoOp -- それ以外は何もしない
+                                             )
+                                  Err err ->
+                                      Debug.log "Failed to decode touches" (Debug.toString err)
+                                      |> (\_ -> MsgNoOp)
+                             )
                       )
-                      -- changedTouches リストの取得
-                      (Decode.field "changedTouches"
-                          (Decode.list
-                              (Decode.map2
-                                  (\clientX clientY -> (clientX, clientY))
-                                  (Decode.field "clientX" Decode.float)
-                                  (Decode.field "clientY" Decode.float)
-                              )
-                          )
-                      )
+                      Decode.value -- イベント全体を取得
 
         ]
         [ ( "N", lazy3 viewBrick model ( x, y ) n)
@@ -2050,7 +2047,16 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
         , ( "B", lazy4 viewAST model (x, y + interval model ) ToBottom b )
         ]
 
-
+-- 2本指のタッチイベントをデコード
+decodeTouches : Decode.Decoder (List (Float, Float))
+decodeTouches =
+    Decode.field "changedTouches"
+        (Decode.list
+            (Decode.map2 (\clientX clientY -> (clientX, clientY))
+                (Decode.field "clientX" Decode.float)
+                (Decode.field "clientY" Decode.float)
+            )
+        )
 
 
 

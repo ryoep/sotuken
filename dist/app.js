@@ -8399,7 +8399,7 @@ var $author$project$Main$update = F2(
 				return _Utils_Tuple2(
 					A2($author$project$Main$cloneUs, ast, model),
 					$elm$core$Platform$Cmd$none);
-			case 'NoAction':
+			case 'MsgNoOp':
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			case 'MsgStartDnD':
 				var rootXY = msg.a;
@@ -8771,18 +8771,33 @@ var $author$project$Main$MsgCloneUs = function (a) {
 	return {$: 'MsgCloneUs', a: a};
 };
 var $author$project$Main$MsgDblClick = {$: 'MsgDblClick'};
+var $author$project$Main$MsgNoOp = {$: 'MsgNoOp'};
 var $author$project$Main$MsgStartDnD = F2(
 	function (a, b) {
 		return {$: 'MsgStartDnD', a: a, b: b};
 	});
-var $author$project$Main$NoAction = {$: 'NoAction'};
 var $author$project$Main$ToBottom = {$: 'ToBottom'};
 var $author$project$Main$ToRight = {$: 'ToRight'};
+var $author$project$Main$decodeTouches = A2(
+	$elm$json$Json$Decode$field,
+	'changedTouches',
+	$elm$json$Json$Decode$list(
+		A3(
+			$elm$json$Json$Decode$map2,
+			F2(
+				function (clientX, clientY) {
+					return _Utils_Tuple2(clientX, clientY);
+				}),
+			A2($elm$json$Json$Decode$field, 'clientX', $elm$json$Json$Decode$float),
+			A2($elm$json$Json$Decode$field, 'clientY', $elm$json$Json$Decode$float))));
+var $elm$json$Json$Decode$decodeValue = _Json_run;
 var $elm$virtual_dom$VirtualDom$lazy3 = _VirtualDom_lazy3;
 var $elm$html$Html$Lazy$lazy3 = $elm$virtual_dom$VirtualDom$lazy3;
 var $elm$virtual_dom$VirtualDom$lazy4 = _VirtualDom_lazy4;
 var $elm$html$Html$Lazy$lazy4 = $elm$virtual_dom$VirtualDom$lazy4;
 var $elm$core$Debug$log = _Debug_log;
+var $elm$core$Debug$toString = _Debug_toString;
+var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $author$project$Main$MsgLetMeRoot = F2(
 	function (a, b) {
 		return {$: 'MsgLetMeRoot', a: a, b: b};
@@ -9957,32 +9972,37 @@ var $author$project$Main$viewASTRoot = F2(
 						model,
 						A2(
 							$elm$json$Json$Decode$map,
-							function (touches) {
-								var touchCount = $elm$core$List$length(touches);
+							function (event) {
 								return function (_v2) {
-									return (touchCount === 2) ? $author$project$Main$MsgCloneUs(
-										A2(
-											$author$project$Main$ASTxy,
-											_Utils_Tuple2(x, y),
-											A3($author$project$Main$ASTne, n, b, r))) : $author$project$Main$NoAction;
+									var _v3 = A2($elm$json$Json$Decode$decodeValue, $author$project$Main$decodeTouches, event);
+									if (_v3.$ === 'Ok') {
+										var touches = _v3.a;
+										var touchCount = $elm$core$List$length(touches);
+										return function (_v4) {
+											return (touchCount === 2) ? $author$project$Main$MsgCloneUs(
+												A2(
+													$author$project$Main$ASTxy,
+													_Utils_Tuple2(x, y),
+													A3($author$project$Main$ASTne, n, b, r))) : $author$project$Main$MsgNoOp;
+										}(
+											A2(
+												$elm$core$Debug$log,
+												'Touches detected: ' + $elm$core$String$fromInt(touchCount),
+												touchCount));
+									} else {
+										var err = _v3.a;
+										return function (_v5) {
+											return $author$project$Main$MsgNoOp;
+										}(
+											A2(
+												$elm$core$Debug$log,
+												'Failed to decode touches',
+												$elm$core$Debug$toString(err)));
+									}
 								}(
-									A2(
-										$elm$core$Debug$log,
-										'Touches detected: ' + $elm$core$String$fromInt(touchCount),
-										touchCount));
+									A2($elm$core$Debug$log, 'Touch Event Detected', event));
 							},
-							A2(
-								$elm$json$Json$Decode$field,
-								'changedTouches',
-								$elm$json$Json$Decode$list(
-									A3(
-										$elm$json$Json$Decode$map2,
-										F2(
-											function (clientX, clientY) {
-												return _Utils_Tuple2(clientX, clientY);
-											}),
-										A2($elm$json$Json$Decode$field, 'clientX', $elm$json$Json$Decode$float),
-										A2($elm$json$Json$Decode$field, 'clientY', $elm$json$Json$Decode$float)))))))
+							$elm$json$Json$Decode$value)))
 				]),
 			_List_fromArray(
 				[
