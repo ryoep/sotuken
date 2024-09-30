@@ -2016,7 +2016,7 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
 
 
         -- Duplicate: 2本指のタッチで複製
-        , preventDefaultOn "touchstart"
+        , preventDefaultOn "Duplicate"
               <| whenNotDragging model
                   <| Decode.map
                       (\touches ->
