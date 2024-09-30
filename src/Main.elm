@@ -1908,7 +1908,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "マーカス" --新しい関数名
+                        , placeholder "ブルーの" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
