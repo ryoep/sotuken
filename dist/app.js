@@ -8778,7 +8778,6 @@ var $author$project$Main$MsgStartDnD = F2(
 var $author$project$Main$NoAction = {$: 'NoAction'};
 var $author$project$Main$ToBottom = {$: 'ToBottom'};
 var $author$project$Main$ToRight = {$: 'ToRight'};
-var $elm$json$Json$Decode$int = _Json_decodeInt;
 var $elm$virtual_dom$VirtualDom$lazy3 = _VirtualDom_lazy3;
 var $elm$html$Html$Lazy$lazy3 = $elm$virtual_dom$VirtualDom$lazy3;
 var $elm$virtual_dom$VirtualDom$lazy4 = _VirtualDom_lazy4;
@@ -9684,6 +9683,7 @@ var $author$project$Main$viewBrick = F3(
 				}()
 				]));
 	});
+var $elm$json$Json$Decode$int = _Json_decodeInt;
 var $elm_community$json_extra$Json$Decode$Extra$when = F3(
 	function (checkDecoder, check, passDecoder) {
 		return A2(
@@ -9975,7 +9975,14 @@ var $author$project$Main$viewASTRoot = F2(
 								$elm$json$Json$Decode$field,
 								'changedTouches',
 								$elm$json$Json$Decode$list(
-									A2($elm$json$Json$Decode$field, 'identifier', $elm$json$Json$Decode$int))))))
+									A3(
+										$elm$json$Json$Decode$map2,
+										F2(
+											function (clientX, clientY) {
+												return _Utils_Tuple2(clientX, clientY);
+											}),
+										A2($elm$json$Json$Decode$field, 'clientX', $elm$json$Json$Decode$float),
+										A2($elm$json$Json$Decode$field, 'clientY', $elm$json$Json$Decode$float)))))))
 				]),
 			_List_fromArray(
 				[

@@ -2021,10 +2021,11 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                   <| Decode.map
                       (\touches ->
                           let
+                              -- changedTouches の数を取得
                               touchCount = List.length touches
                           in
-                          -- タッチの数をログに出力
-                          Debug.log ("Touches detected: " ++ String.fromInt touchCount) touches
+                              -- タッチ数をデバッグログに表示
+                              Debug.log ("Touches detected: " ++ String.fromInt touchCount) touches
                               |> (\_ ->
                                   if touchCount == 2 then
                                       MsgCloneUs (ASTxy ( x, y ) (ASTne n b r))
@@ -2032,8 +2033,9 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                                       NoAction
                                  )
                       )
-                      -- changedTouches リスト全体をデコードする
-                      (Decode.field "changedTouches" (Decode.list (Decode.field "identifier" Decode.int)))
+                      -- changedTouches リストの取得
+                      (Decode.field "changedTouches" (Decode.list (Decode.map2 (\clientX clientY -> (clientX, clientY)) (Decode.field "clientX" Decode.float) (Decode.field "clientY" Decode.float))))
+
         ]
         [ ( "N", lazy3 viewBrick model ( x, y ) n)
         , ( "R", lazy4 viewAST model ( x + interval model, y ) ToRight r )
