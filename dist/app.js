@@ -8796,7 +8796,6 @@ var $elm$html$Html$Lazy$lazy3 = $elm$virtual_dom$VirtualDom$lazy3;
 var $elm$virtual_dom$VirtualDom$lazy4 = _VirtualDom_lazy4;
 var $elm$html$Html$Lazy$lazy4 = $elm$virtual_dom$VirtualDom$lazy4;
 var $elm$core$Debug$log = _Debug_log;
-var $elm$core$Debug$toString = _Debug_toString;
 var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $author$project$Main$MsgLetMeRoot = F2(
 	function (a, b) {
@@ -9966,41 +9965,29 @@ var $author$project$Main$viewASTRoot = F2(
 						$elm$json$Json$Decode$succeed($author$project$Main$MsgDblClick))),
 					A2(
 					$author$project$Main$preventDefaultOn,
-					'Duplicate',
+					'touchstart',
 					A2(
 						$author$project$Main$whenNotDragging,
 						model,
 						A2(
-							$elm$json$Json$Decode$map,
+							$elm$json$Json$Decode$andThen,
 							function (event) {
-								return function (_v2) {
-									var _v3 = A2($elm$json$Json$Decode$decodeValue, $author$project$Main$decodeTouches, event);
-									if (_v3.$ === 'Ok') {
-										var touches = _v3.a;
-										var touchCount = $elm$core$List$length(touches);
-										return function (_v4) {
-											return (touchCount === 2) ? $author$project$Main$MsgCloneUs(
-												A2(
-													$author$project$Main$ASTxy,
-													_Utils_Tuple2(x, y),
-													A3($author$project$Main$ASTne, n, b, r))) : $author$project$Main$MsgNoOp;
-										}(
-											A2(
-												$elm$core$Debug$log,
-												'Touches detected: ' + $elm$core$String$fromInt(touchCount),
-												touchCount));
-									} else {
-										var err = _v3.a;
-										return function (_v5) {
-											return $author$project$Main$MsgNoOp;
-										}(
-											A2(
-												$elm$core$Debug$log,
-												'Failed to decode touches',
-												$elm$core$Debug$toString(err)));
-									}
-								}(
-									A2($elm$core$Debug$log, 'Touch Event Detected', event));
+								var _v2 = A2($elm$json$Json$Decode$decodeValue, $author$project$Main$decodeTouches, event);
+								if (_v2.$ === 'Ok') {
+									var touches = _v2.a;
+									var touchCount = $elm$core$List$length(touches);
+									return (touchCount === 2) ? function (_v3) {
+										return $elm$json$Json$Decode$succeed(
+											$author$project$Main$MsgCloneUs(root));
+									}(
+										A2($elm$core$Debug$log, '2本指のタッチ検出', touchCount)) : $elm$json$Json$Decode$succeed($author$project$Main$MsgNoOp);
+								} else {
+									var err = _v2.a;
+									return function (_v4) {
+										return $elm$json$Json$Decode$succeed($author$project$Main$MsgNoOp);
+									}(
+										A2($elm$core$Debug$log, 'Failed to decode touches', err));
+								}
 							},
 							$elm$json$Json$Decode$value)))
 				]),

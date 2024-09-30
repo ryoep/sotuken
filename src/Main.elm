@@ -2014,30 +2014,28 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                   <| Decode.succeed MsgDblClick
 
 
+
         -- Duplicate: 2本指のタッチで複製
-        , preventDefaultOn "Duplicate"
+        , preventDefaultOn "touchstart"
               <| whenNotDragging model
-                  <| Decode.map
+                  <| Decode.andThen
                       (\event ->
-                          -- タッチイベント全体をログに出力
-                          Debug.log "Touch Event Detected" event
-                          |> (\_ ->
-                              case Decode.decodeValue decodeTouches event of
-                                  Ok touches ->
-                                      let
-                                          touchCount = List.length touches
-                                      in
-                                          Debug.log ("Touches detected: " ++ String.fromInt touchCount) touchCount
-                                          |> (\_ ->
-                                              if touchCount == 2 then
-                                                  MsgCloneUs (ASTxy ( x, y ) (ASTne n b r)) -- 2本指なら複製
-                                              else
-                                                  MsgNoOp -- それ以外は何もしない
-                                             )
-                                  Err err ->
-                                      Debug.log "Failed to decode touches" (Debug.toString err)
-                                      |> (\_ -> MsgNoOp)
-                             )
+                          case Decode.decodeValue decodeTouches event of
+                              Ok touches ->
+                                  let
+                                      touchCount = List.length touches
+                                  in
+                                  if touchCount == 2 then
+                                      -- デバッグログ: タッチ数を表示
+                                      Debug.log "2本指のタッチ検出" touchCount
+                                      -- 複製メッセージを送信
+                                      |> (\_ -> Decode.succeed (MsgCloneUs root))
+                                  else
+                                      Decode.succeed MsgNoOp
+                              Err err ->
+                                  -- エラーログ
+                                  Debug.log "Failed to decode touches" err
+                                  |> (\_ -> Decode.succeed MsgNoOp)
                       )
                       Decode.value -- イベント全体を取得
 
