@@ -8399,6 +8399,11 @@ var $author$project$Main$update = F2(
 				return _Utils_Tuple2(
 					A2($author$project$Main$cloneUs, ast, model),
 					$elm$core$Platform$Cmd$none);
+			case 'MsgDuplicate':
+				var ast = msg.a;
+				return _Utils_Tuple2(
+					A2($author$project$Main$cloneUs, ast, model),
+					$elm$core$Platform$Cmd$none);
 			case 'MsgNoOp':
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			case 'MsgStartDnD':
@@ -8771,6 +8776,9 @@ var $author$project$Main$MsgCloneUs = function (a) {
 	return {$: 'MsgCloneUs', a: a};
 };
 var $author$project$Main$MsgDblClick = {$: 'MsgDblClick'};
+var $author$project$Main$MsgDuplicate = function (a) {
+	return {$: 'MsgDuplicate', a: a};
+};
 var $author$project$Main$MsgNoOp = {$: 'MsgNoOp'};
 var $author$project$Main$MsgStartDnD = F2(
 	function (a, b) {
@@ -8778,28 +8786,12 @@ var $author$project$Main$MsgStartDnD = F2(
 	});
 var $author$project$Main$ToBottom = {$: 'ToBottom'};
 var $author$project$Main$ToRight = {$: 'ToRight'};
-var $author$project$Main$decodeTwoFingerTouch = A2(
-	$elm$json$Json$Decode$map,
-	function (touchList) {
-		return $elm$core$List$length(touchList) === 2;
-	},
-	A2(
-		$elm$json$Json$Decode$field,
-		'changedTouches',
-		$elm$json$Json$Decode$list(
-			A3(
-				$elm$json$Json$Decode$map2,
-				F2(
-					function (clientX, clientY) {
-						return _Utils_Tuple2(clientX, clientY);
-					}),
-				A2($elm$json$Json$Decode$field, 'clientX', $elm$json$Json$Decode$float),
-				A2($elm$json$Json$Decode$field, 'clientY', $elm$json$Json$Decode$float)))));
 var $elm$virtual_dom$VirtualDom$lazy3 = _VirtualDom_lazy3;
 var $elm$html$Html$Lazy$lazy3 = $elm$virtual_dom$VirtualDom$lazy3;
 var $elm$virtual_dom$VirtualDom$lazy4 = _VirtualDom_lazy4;
 var $elm$html$Html$Lazy$lazy4 = $elm$virtual_dom$VirtualDom$lazy4;
 var $elm$core$Debug$log = _Debug_log;
+var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $author$project$Main$MsgLetMeRoot = F2(
 	function (a, b) {
 		return {$: 'MsgLetMeRoot', a: a, b: b};
@@ -9968,17 +9960,16 @@ var $author$project$Main$viewASTRoot = F2(
 						$elm$json$Json$Decode$succeed($author$project$Main$MsgDblClick))),
 					A2(
 					$author$project$Main$preventDefaultOn,
-					'Duplicate',
+					'touchend',
 					A2(
-						$author$project$Main$whenNotDragging,
-						model,
+						$elm$json$Json$Decode$map,
+						function (touches) {
+							return ($elm$core$List$length(touches) === 2) ? $author$project$Main$MsgDuplicate(root) : $author$project$Main$MsgNoOp;
+						},
 						A2(
-							$elm$json$Json$Decode$andThen,
-							function (isTwoFingers) {
-								return isTwoFingers ? $elm$json$Json$Decode$succeed(
-									$author$project$Main$MsgCloneUs(root)) : $elm$json$Json$Decode$succeed($author$project$Main$MsgNoOp);
-							},
-							$author$project$Main$decodeTwoFingerTouch)))
+							$elm$json$Json$Decode$field,
+							'changedTouches',
+							$elm$json$Json$Decode$list($elm$json$Json$Decode$value))))
 				]),
 			_List_fromArray(
 				[

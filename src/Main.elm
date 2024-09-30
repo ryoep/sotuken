@@ -382,6 +382,7 @@ type Msg
     | MsgMoveUs Position
     | MsgAttachMe (ASTxy Node)
     | MsgStartDnD Position Position
+    | MsgDuplicate (ASTxy Node) -- 複製用のメッセージを追加
     | MsgInputChanged Position Int String
     | MsgCheckString  Position Int String
     | MsgSetVarNames -- 全ての変数名を取得
@@ -457,6 +458,9 @@ update msg model =
         -- MsgCloneUs ast ->
         --    Debug.log "MsgCloneUs received" ( cloneUs ast model, Cmd.none )
         MsgCloneUs ast ->
+            ( cloneUs ast model, Cmd.none )
+        MsgDuplicate ast ->
+            -- 既存のASTを少しずらして複製する
             ( cloneUs ast model, Cmd.none )
         MsgNoOp ->
             -- NoAction では何もせずそのまま model を返す
@@ -2014,16 +2018,19 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                   <| Decode.succeed MsgDblClick
 
 
+        -- 2本指タッチで複製を行う処理
+        , preventDefaultOn "touchend"
+              <| Decode.map
+                  (\touches -> 
+                      if List.length touches == 2 then
+                          MsgDuplicate root
+                      else
+                          MsgNoOp
+                  )
+                  (Decode.field "changedTouches" (Decode.list Decode.value))
 
-        -- 二本指タッチで複製
-        , preventDefaultOn "Duplicate"
-              <| whenNotDragging model
-                  <| Decode.andThen (\isTwoFingers -> 
-                        if isTwoFingers then
-                            Decode.succeed (MsgCloneUs root)
-                        else
-                            Decode.succeed MsgNoOp
-                     ) decodeTwoFingerTouch
+
+
 
         ]
         [ ( "N", lazy3 viewBrick model ( x, y ) n)
@@ -2031,17 +2038,19 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
         , ( "B", lazy4 viewAST model (x, y + interval model ) ToBottom b )
         ]
 
--- 2本指のタッチイベントをデコード
-decodeTwoFingerTouch : Decode.Decoder Bool
-decodeTwoFingerTouch =
-    Decode.field "changedTouches"
-        (Decode.list
-            (Decode.map2 (\clientX clientY -> (clientX, clientY))
-                (Decode.field "clientX" Decode.float)
-                (Decode.field "clientY" Decode.float)
+
+decodeTouches : ASTxy Node -> Decode.Decoder Msg
+decodeTouches ast =
+    Decode.field "changedTouches" (Decode.list Decode.value)
+        |> Decode.andThen
+            (\touches ->
+                if List.length touches == 2 then
+                    Decode.succeed (MsgDuplicate ast)  -- astを渡す
+                else
+                    Decode.fail "Not a two-finger touch"
             )
-        )
-    |> Decode.map (\touchList -> List.length touchList == 2)
+
+
 
 
 
