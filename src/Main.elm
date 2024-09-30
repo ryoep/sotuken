@@ -1911,7 +1911,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "だろと" --新しい関数名
+                        , placeholder "マグワイア" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -2021,11 +2021,9 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                   <| Decode.succeed MsgDblClick
 
 
-        -- 二本指タッチを検知し、Duplicateイベントを発火
-        , on "touchstart" (decodeTouches root)
+        , on "Duplicate" (Decode.map (\_ -> MsgDuplicate root) (decodeTouches root))
 
-        -- カスタムイベント Duplicate を発火
-        , preventDefaultOn "Duplicate" (Decode.succeed (MsgDuplicate root))
+
 
 
         ]

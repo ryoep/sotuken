@@ -9970,13 +9970,13 @@ var $author$project$Main$viewASTRoot = F2(
 						$elm$json$Json$Decode$succeed($author$project$Main$MsgDblClick))),
 					A2(
 					$author$project$Main$on,
-					'touchstart',
-					$author$project$Main$decodeTouches(root)),
-					A2(
-					$author$project$Main$preventDefaultOn,
 					'Duplicate',
-					$elm$json$Json$Decode$succeed(
-						$author$project$Main$MsgDuplicate(root)))
+					A2(
+						$elm$json$Json$Decode$map,
+						function (_v2) {
+							return $author$project$Main$MsgDuplicate(root);
+						},
+						$author$project$Main$decodeTouches(root)))
 				]),
 			_List_fromArray(
 				[
@@ -10237,7 +10237,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('だろと'),
+												$elm$html$Html$Attributes$placeholder('マグワイア'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(
