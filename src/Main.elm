@@ -1904,7 +1904,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "新しい関数名" --新しい関数名
+                        , placeholder "マーカス" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -2015,29 +2015,15 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
 
 
 
-        -- Duplicate: 2本指のタッチで複製
+        -- 二本指タッチで複製
         , preventDefaultOn "touchstart"
               <| whenNotDragging model
-                  <| Decode.andThen
-                      (\event ->
-                          case Decode.decodeValue decodeTouches event of
-                              Ok touches ->
-                                  let
-                                      touchCount = List.length touches
-                                  in
-                                  if touchCount == 2 then
-                                      -- デバッグログ: タッチ数を表示
-                                      Debug.log "2本指のタッチ検出" touchCount
-                                      -- 複製メッセージを送信
-                                      |> (\_ -> Decode.succeed (MsgCloneUs root))
-                                  else
-                                      Decode.succeed MsgNoOp
-                              Err err ->
-                                  -- エラーログ
-                                  Debug.log "Failed to decode touches" err
-                                  |> (\_ -> Decode.succeed MsgNoOp)
-                      )
-                      Decode.value -- イベント全体を取得
+                  <| Decode.andThen (\isTwoFingers -> 
+                        if isTwoFingers then
+                            Decode.succeed (MsgCloneUs root)
+                        else
+                            Decode.succeed MsgNoOp
+                     ) decodeTwoFingerTouch
 
         ]
         [ ( "N", lazy3 viewBrick model ( x, y ) n)
@@ -2046,8 +2032,8 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
         ]
 
 -- 2本指のタッチイベントをデコード
-decodeTouches : Decode.Decoder (List (Float, Float))
-decodeTouches =
+decodeTwoFingerTouch : Decode.Decoder Bool
+decodeTwoFingerTouch =
     Decode.field "changedTouches"
         (Decode.list
             (Decode.map2 (\clientX clientY -> (clientX, clientY))
@@ -2055,6 +2041,7 @@ decodeTouches =
                 (Decode.field "clientY" Decode.float)
             )
         )
+    |> Decode.map (\touchList -> List.length touchList == 2)
 
 
 

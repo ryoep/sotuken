@@ -8778,25 +8778,28 @@ var $author$project$Main$MsgStartDnD = F2(
 	});
 var $author$project$Main$ToBottom = {$: 'ToBottom'};
 var $author$project$Main$ToRight = {$: 'ToRight'};
-var $author$project$Main$decodeTouches = A2(
-	$elm$json$Json$Decode$field,
-	'changedTouches',
-	$elm$json$Json$Decode$list(
-		A3(
-			$elm$json$Json$Decode$map2,
-			F2(
-				function (clientX, clientY) {
-					return _Utils_Tuple2(clientX, clientY);
-				}),
-			A2($elm$json$Json$Decode$field, 'clientX', $elm$json$Json$Decode$float),
-			A2($elm$json$Json$Decode$field, 'clientY', $elm$json$Json$Decode$float))));
-var $elm$json$Json$Decode$decodeValue = _Json_run;
+var $author$project$Main$decodeTwoFingerTouch = A2(
+	$elm$json$Json$Decode$map,
+	function (touchList) {
+		return $elm$core$List$length(touchList) === 2;
+	},
+	A2(
+		$elm$json$Json$Decode$field,
+		'changedTouches',
+		$elm$json$Json$Decode$list(
+			A3(
+				$elm$json$Json$Decode$map2,
+				F2(
+					function (clientX, clientY) {
+						return _Utils_Tuple2(clientX, clientY);
+					}),
+				A2($elm$json$Json$Decode$field, 'clientX', $elm$json$Json$Decode$float),
+				A2($elm$json$Json$Decode$field, 'clientY', $elm$json$Json$Decode$float)))));
 var $elm$virtual_dom$VirtualDom$lazy3 = _VirtualDom_lazy3;
 var $elm$html$Html$Lazy$lazy3 = $elm$virtual_dom$VirtualDom$lazy3;
 var $elm$virtual_dom$VirtualDom$lazy4 = _VirtualDom_lazy4;
 var $elm$html$Html$Lazy$lazy4 = $elm$virtual_dom$VirtualDom$lazy4;
 var $elm$core$Debug$log = _Debug_log;
-var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $author$project$Main$MsgLetMeRoot = F2(
 	function (a, b) {
 		return {$: 'MsgLetMeRoot', a: a, b: b};
@@ -9971,25 +9974,11 @@ var $author$project$Main$viewASTRoot = F2(
 						model,
 						A2(
 							$elm$json$Json$Decode$andThen,
-							function (event) {
-								var _v2 = A2($elm$json$Json$Decode$decodeValue, $author$project$Main$decodeTouches, event);
-								if (_v2.$ === 'Ok') {
-									var touches = _v2.a;
-									var touchCount = $elm$core$List$length(touches);
-									return (touchCount === 2) ? function (_v3) {
-										return $elm$json$Json$Decode$succeed(
-											$author$project$Main$MsgCloneUs(root));
-									}(
-										A2($elm$core$Debug$log, '2本指のタッチ検出', touchCount)) : $elm$json$Json$Decode$succeed($author$project$Main$MsgNoOp);
-								} else {
-									var err = _v2.a;
-									return function (_v4) {
-										return $elm$json$Json$Decode$succeed($author$project$Main$MsgNoOp);
-									}(
-										A2($elm$core$Debug$log, 'Failed to decode touches', err));
-								}
+							function (isTwoFingers) {
+								return isTwoFingers ? $elm$json$Json$Decode$succeed(
+									$author$project$Main$MsgCloneUs(root)) : $elm$json$Json$Decode$succeed($author$project$Main$MsgNoOp);
 							},
-							$elm$json$Json$Decode$value)))
+							$author$project$Main$decodeTwoFingerTouch)))
 				]),
 			_List_fromArray(
 				[
@@ -10250,7 +10239,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('新しい関数名'),
+												$elm$html$Html$Attributes$placeholder('マーカス'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(
