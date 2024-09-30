@@ -460,8 +460,11 @@ update msg model =
         MsgCloneUs ast ->
             ( cloneUs ast model, Cmd.none )
         MsgDuplicate ast ->
-            -- 既存のASTを少しずらして複製する
-            ( cloneUs ast model, Cmd.none )
+            -- 複製処理を行う
+            let
+                newModel = cloneUs ast model
+            in
+            (newModel, Cmd.none)
         MsgNoOp ->
             -- NoAction では何もせずそのまま model を返す
             (model, Cmd.none)
@@ -1908,7 +1911,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "ブルーの" --新しい関数名
+                        , placeholder "おなな" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -2018,18 +2021,8 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                   <| Decode.succeed MsgDblClick
 
 
-        -- 2本指タッチで複製を行う処理
-        , preventDefaultOn "touchend"
-              <| Decode.map
-                  (\touches -> 
-                      if List.length touches == 2 then
-                          MsgDuplicate root
-                      else
-                          MsgNoOp
-                  )
-                  (Decode.field "changedTouches" (Decode.list Decode.value))
-
-
+        -- カスタムイベント Duplicate を発火
+        , preventDefaultOn "Duplicate" (Decode.succeed (MsgDuplicate root))
 
 
         ]
@@ -2040,15 +2033,18 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
 
 
 decodeTouches : ASTxy Node -> Decode.Decoder Msg
-decodeTouches ast =
+decodeTouches root =
     Decode.field "changedTouches" (Decode.list Decode.value)
         |> Decode.andThen
             (\touches ->
                 if List.length touches == 2 then
-                    Decode.succeed (MsgDuplicate ast)  -- astを渡す
+                    -- ここで MsgDuplicate に root を渡す
+                    Decode.succeed (MsgDuplicate root)
                 else
                     Decode.fail "Not a two-finger touch"
             )
+
+
 
 
 
