@@ -9902,8 +9902,16 @@ var $author$project$Main$viewASTRoot = F2(
 					A2(
 					$author$project$Main$preventDefaultOn,
 					'touchend',
-					$elm$json$Json$Decode$succeed(
-						A2($elm$core$Debug$log, 'Touchend event detected', $author$project$Main$MsgNoOp))),
+					A2(
+						$elm$json$Json$Decode$andThen,
+						function (touches) {
+							var _v2 = A2($elm$core$Debug$log, 'Raw touches', touches);
+							return $elm$json$Json$Decode$succeed($author$project$Main$MsgNoOp);
+						},
+						A2(
+							$elm$json$Json$Decode$field,
+							'changedTouches',
+							$elm$json$Json$Decode$list($elm$json$Json$Decode$value)))),
 					A2(
 					$author$project$Main$on,
 					'mousedown',
@@ -9972,7 +9980,7 @@ var $author$project$Main$viewASTRoot = F2(
 					'Duplicate',
 					A2(
 						$elm$json$Json$Decode$map,
-						function (_v2) {
+						function (_v3) {
 							return $author$project$Main$MsgDuplicate(root);
 						},
 						$author$project$Main$decodeTouches(root)))
@@ -10236,7 +10244,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('nljl'),
+												$elm$html$Html$Attributes$placeholder('新しい関数名'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(
