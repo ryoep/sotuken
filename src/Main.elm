@@ -1911,7 +1911,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "新しい関数名" --新しい関数名
+                        , placeholder "ラッシュフォード" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -1986,18 +1986,23 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
         --                 <| MsgAttachMe root
 
             -- touchend
-            , preventDefaultOn "touchend"
+            , (preventDefaultOn "touchend"
                 <| whenDragging model
-                    <| Decode.map2
-                        (\clientX clientY -> 
-                            let
-                                _ = Debug.log "Touch end detected - X" clientX -- X座標をログ出力
-                                _ = Debug.log "Touch end detected - Y" clientY -- Y座標をログ出力
+                    (Decode.field "changedTouches" (Decode.list Decode.value)
+                        |> Decode.andThen
+                            (\touches ->
+                                let
+                                    _ = Debug.log "Touch end detected" (List.length touches) -- タッチされた指の数をログ出力
                             in
-                            MsgAttachMe root -- 最終的に MsgAttachMe を返す
-                        )
-                        (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
-                        (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
+                                if List.length touches == 2 then
+                                    Decode.succeed (MsgDuplicate root) -- 二本指ならブロック複製
+                                else
+                                    Decode.succeed MsgNoOp -- 一本指なら何もしない
+                            )
+                    )
+            )
+
+
 
 
 
