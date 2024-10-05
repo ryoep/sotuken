@@ -1911,7 +1911,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "新しい関数名" --新しい関数名
+                        , placeholder "nljl" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -1986,19 +1986,10 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
         --                 <| MsgAttachMe root
 
             -- touchend
+            -- touchend
             , preventDefaultOn "touchend"
-                <| (Decode.field "changedTouches" (Decode.list Decode.value)
-                    |> Decode.andThen
-                        (\touches ->
-                            let
-                                _ = Debug.log "Touchend event detected" touches -- touchend イベント発生をログ出力
-                                _ = case touches of
-                                    [] -> Debug.log "No touches detected" touches
-                                    _ -> Debug.log "Touch end detected" touches -- touches の中身をログ出力
-                            in
-                            Decode.succeed MsgNoOp -- タッチイベントだけを確認
-                        )
-                )
+                <| (Decode.succeed (Debug.log "Touchend event detected" MsgNoOp))
+
 
 
 
