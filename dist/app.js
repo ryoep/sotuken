@@ -9908,7 +9908,8 @@ var $author$project$Main$viewASTRoot = F2(
 						A2(
 							$elm$json$Json$Decode$andThen,
 							function (touches) {
-								var _v2 = A2(
+								var _v2 = A2($elm$core$Debug$log, 'Raw touches', touches);
+								var _v3 = A2(
 									$elm$core$Debug$log,
 									'Touch end detected',
 									$elm$core$List$length(touches));
@@ -9987,7 +9988,7 @@ var $author$project$Main$viewASTRoot = F2(
 					'Duplicate',
 					A2(
 						$elm$json$Json$Decode$map,
-						function (_v3) {
+						function (_v4) {
 							return $author$project$Main$MsgDuplicate(root);
 						},
 						$author$project$Main$decodeTouches(root)))
@@ -10251,7 +10252,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('ラッシュフォード'),
+												$elm$html$Html$Attributes$placeholder('サール'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(
