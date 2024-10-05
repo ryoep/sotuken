@@ -377,12 +377,12 @@ subscriptions model =
 
 type Msg
     = MsgCloneUs (ASTxy Node)
+    | MsgDuplicate (ASTxy Node) -- 複製用のメッセージを追加
     | MsgNoOp
     | MsgLetMeRoot (ASTxy Node) Position
     | MsgMoveUs Position
     | MsgAttachMe (ASTxy Node)
     | MsgStartDnD Position Position
-    | MsgDuplicate (ASTxy Node) -- 複製用のメッセージを追加
     | MsgInputChanged Position Int String
     | MsgCheckString  Position Int String
     | MsgSetVarNames -- 全ての変数名を取得
@@ -460,7 +460,7 @@ update msg model =
         MsgCloneUs ast ->
             ( cloneUs ast model, Cmd.none )
         MsgDuplicate ast ->
-            -- 複製処理を行う
+            -- 複製を実行
             let
                 newModel = cloneUs ast model
             in
@@ -1911,7 +1911,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "マグワイア" --新しい関数名
+                        , placeholder "新しい関数名" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -2021,6 +2021,7 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                   <| Decode.succeed MsgDblClick
 
 
+        -- 二本指タッチによる複製
         , on "Duplicate" (Decode.map (\_ -> MsgDuplicate root) (decodeTouches root))
 
 
@@ -2039,11 +2040,11 @@ decodeTouches root =
         |> Decode.andThen
             (\touches ->
                 if List.length touches == 2 then
-                    -- ここで MsgDuplicate に root を渡す
                     Decode.succeed (MsgDuplicate root)
                 else
                     Decode.fail "Not a two-finger touch"
             )
+
 
 
 
