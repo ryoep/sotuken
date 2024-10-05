@@ -1911,7 +1911,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "ウがる手" --新しい関数名
+                        , placeholder "ブルーの" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -2039,11 +2039,19 @@ decodeTouches root =
     Decode.field "changedTouches" (Decode.list Decode.value)
         |> Decode.andThen
             (\touches ->
+                let
+                    _ = Debug.log "Two-finger touch detected" touches
+                in
                 if List.length touches == 2 then
                     Decode.succeed (MsgDuplicate root)
                 else
                     Decode.fail "Not a two-finger touch"
             )
+
+
+
+
+
 
 
 
