@@ -9904,8 +9904,24 @@ var $author$project$Main$viewASTRoot = F2(
 					A2(
 						$author$project$Main$whenDragging,
 						model,
-						$elm$json$Json$Decode$succeed(
-							$author$project$Main$MsgAttachMe(root)))),
+						A3(
+							$elm$json$Json$Decode$map2,
+							F2(
+								function (clientX, clientY) {
+									var _v2 = A2($elm$core$Debug$log, 'Touch end detected - X', clientX);
+									var _v3 = A2($elm$core$Debug$log, 'Touch end detected - Y', clientY);
+									return $author$project$Main$MsgAttachMe(root);
+								}),
+							A2(
+								$elm$json$Json$Decode$at,
+								_List_fromArray(
+									['changedTouches', '0', 'clientX']),
+								$elm$json$Json$Decode$float),
+							A2(
+								$elm$json$Json$Decode$at,
+								_List_fromArray(
+									['changedTouches', '0', 'clientY']),
+								$elm$json$Json$Decode$float)))),
 					A2(
 					$author$project$Main$on,
 					'mousedown',
@@ -9974,7 +9990,7 @@ var $author$project$Main$viewASTRoot = F2(
 					'Duplicate',
 					A2(
 						$elm$json$Json$Decode$map,
-						function (_v2) {
+						function (_v4) {
 							return $author$project$Main$MsgDuplicate(root);
 						},
 						$author$project$Main$decodeTouches(root)))
@@ -10238,7 +10254,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('ブルーの'),
+												$elm$html$Html$Attributes$placeholder('新しい関数名'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(
