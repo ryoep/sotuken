@@ -9905,7 +9905,7 @@ var $author$project$Main$viewASTRoot = F2(
 					A2(
 						$elm$json$Json$Decode$andThen,
 						function (touches) {
-							var _v2 = A2($elm$core$Debug$log, 'Raw touches', touches);
+							var _v2 = A2($elm$core$Debug$log, 'Touchend event detected', touches);
 							var _v3 = function () {
 								if (!touches.b) {
 									return A2($elm$core$Debug$log, 'No touches detected', touches);
@@ -10251,7 +10251,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('josj'),
+												$elm$html$Html$Attributes$placeholder('新しい関数名'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(
