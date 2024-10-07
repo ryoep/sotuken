@@ -8775,6 +8775,9 @@ var $author$project$Main$MsgCloneUs = function (a) {
 	return {$: 'MsgCloneUs', a: a};
 };
 var $author$project$Main$MsgDblClick = {$: 'MsgDblClick'};
+var $author$project$Main$MsgDuplicate = function (a) {
+	return {$: 'MsgDuplicate', a: a};
+};
 var $author$project$Main$MsgStartDnD = F2(
 	function (a, b) {
 		return {$: 'MsgStartDnD', a: a, b: b};
@@ -8785,6 +8788,8 @@ var $elm$virtual_dom$VirtualDom$lazy3 = _VirtualDom_lazy3;
 var $elm$html$Html$Lazy$lazy3 = $elm$virtual_dom$VirtualDom$lazy3;
 var $elm$virtual_dom$VirtualDom$lazy4 = _VirtualDom_lazy4;
 var $elm$html$Html$Lazy$lazy4 = $elm$virtual_dom$VirtualDom$lazy4;
+var $elm$core$Debug$log = _Debug_log;
+var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $author$project$Main$MsgLetMeRoot = F2(
 	function (a, b) {
 		return {$: 'MsgLetMeRoot', a: a, b: b};
@@ -9886,8 +9891,22 @@ var $author$project$Main$viewASTRoot = F2(
 					A2(
 						$author$project$Main$whenDragging,
 						model,
-						$elm$json$Json$Decode$succeed(
-							$author$project$Main$MsgAttachMe(root)))),
+						A2(
+							$elm$json$Json$Decode$andThen,
+							function (touches) {
+								var touchCount = $elm$core$List$length(touches);
+								var _v2 = A2(
+									$elm$core$Debug$log,
+									'Touchend with ' + $elm$core$String$fromInt(touchCount),
+									touchCount);
+								return (touchCount === 2) ? $elm$json$Json$Decode$succeed(
+									$author$project$Main$MsgDuplicate(root)) : $elm$json$Json$Decode$succeed(
+									$author$project$Main$MsgAttachMe(root));
+							},
+							A2(
+								$elm$json$Json$Decode$field,
+								'changedTouches',
+								$elm$json$Json$Decode$list($elm$json$Json$Decode$value))))),
 					A2(
 					$author$project$Main$on,
 					'mousedown',
@@ -10209,7 +10228,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('新しい関数'),
+												$elm$html$Html$Attributes$placeholder('マグワイア'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(
