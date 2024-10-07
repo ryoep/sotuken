@@ -379,8 +379,6 @@ type Msg
     = MsgCloneUs (ASTxy Node)
     | MsgDuplicate (ASTxy Node) -- 複製用のメッセージを追加
     | MsgNoOp
-    | MsgTwoFingerTouch -- これを追加
-    | MsgTouchEndDetected -- 新しく追加したメッセージ
     | MsgLetMeRoot (ASTxy Node) Position
     | MsgMoveUs Position
     | MsgAttachMe (ASTxy Node)
@@ -467,13 +465,6 @@ update msg model =
                 newModel = cloneUs ast model
             in
             (newModel, Cmd.none)
-        MsgTwoFingerTouch ->
-            -- 2本指タッチの処理（特に何もしない場合）
-            (model, Cmd.none)
-        MsgTouchEndDetected ->
-            -- ここではタッチエンド検知の処理を追加できます
-            -- たとえば、デバッグログを出力するだけにして、modelを返す
-            (Debug.log "Touchend detected" model, Cmd.none)
         MsgNoOp ->
             -- NoAction では何もせずそのまま model を返す
             (model, Cmd.none)
@@ -1920,7 +1911,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "ぽｊｌｒｌｆ" --新しい関数名
+                        , placeholder "マーカス" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -1994,28 +1985,10 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
         --        <| Decode.succeed
         --            <| MsgAttachMe root
 
-
-        -- touchend 検証
-        , on "touchend"
-            (Decode.field "changedTouches" (Decode.list Decode.value)
-                |> Decode.andThen
-                    (\touches ->
-                        let
-                            touchCount = List.length touches
-                            _ = Debug.log ("Detected " ++ String.fromInt touchCount ++ " touches") touchCount
-                        in
-                        Decode.succeed MsgTouchEndDetected -- 正しい Msg 型のイベントにする
-                    )
-            )
-
-
-
-
-
-
-
-
-
+        -- touchend イベントで複製を行う処理を追加
+        , preventDefaultOn "touchend"
+            <| whenNotDragging model
+                <| decodeTouches root
 
 
 
@@ -2058,9 +2031,6 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                   <| Decode.succeed MsgDblClick
 
 
-        -- 二本指タッチによる複製
-        --, on "Duplicate" (Decode.map (\_ -> MsgDuplicate root) (decodeTouches root))
-
 
 
 
@@ -2077,13 +2047,16 @@ decodeTouches root =
         |> Decode.andThen
             (\touches ->
                 let
-                    _ = Debug.log "Touch points detected" (List.length touches)
+                    _ = Debug.log "Touch points detected" touches
                 in
                 if List.length touches == 2 then
                     Decode.succeed (MsgDuplicate root)
                 else
                     Decode.fail "Not a two-finger touch"
             )
+
+
+
 
 
 

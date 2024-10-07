@@ -6558,7 +6558,6 @@ var $author$project$Main$loadProgram = F2(
 			return model;
 		}
 	});
-var $elm$core$Debug$log = _Debug_log;
 var $author$project$Main$makeNewRoutine = function (model) {
 	var newEntryBrick = {
 		getBrickCommand: $author$project$Main$CommandNOP,
@@ -8404,12 +8403,6 @@ var $author$project$Main$update = F2(
 				var ast = msg.a;
 				var newModel = A2($author$project$Main$cloneUs, ast, model);
 				return _Utils_Tuple2(newModel, $elm$core$Platform$Cmd$none);
-			case 'MsgTwoFingerTouch':
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-			case 'MsgTouchEndDetected':
-				return _Utils_Tuple2(
-					A2($elm$core$Debug$log, 'Touchend detected', model),
-					$elm$core$Platform$Cmd$none);
 			case 'MsgNoOp':
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			case 'MsgStartDnD':
@@ -8786,14 +8779,30 @@ var $author$project$Main$MsgStartDnD = F2(
 	function (a, b) {
 		return {$: 'MsgStartDnD', a: a, b: b};
 	});
-var $author$project$Main$MsgTouchEndDetected = {$: 'MsgTouchEndDetected'};
 var $author$project$Main$ToBottom = {$: 'ToBottom'};
 var $author$project$Main$ToRight = {$: 'ToRight'};
+var $author$project$Main$MsgDuplicate = function (a) {
+	return {$: 'MsgDuplicate', a: a};
+};
+var $elm$core$Debug$log = _Debug_log;
+var $elm$json$Json$Decode$value = _Json_decodeValue;
+var $author$project$Main$decodeTouches = function (root) {
+	return A2(
+		$elm$json$Json$Decode$andThen,
+		function (touches) {
+			var _v0 = A2($elm$core$Debug$log, 'Touch points detected', touches);
+			return ($elm$core$List$length(touches) === 2) ? $elm$json$Json$Decode$succeed(
+				$author$project$Main$MsgDuplicate(root)) : $elm$json$Json$Decode$fail('Not a two-finger touch');
+		},
+		A2(
+			$elm$json$Json$Decode$field,
+			'changedTouches',
+			$elm$json$Json$Decode$list($elm$json$Json$Decode$value)));
+};
 var $elm$virtual_dom$VirtualDom$lazy3 = _VirtualDom_lazy3;
 var $elm$html$Html$Lazy$lazy3 = $elm$virtual_dom$VirtualDom$lazy3;
 var $elm$virtual_dom$VirtualDom$lazy4 = _VirtualDom_lazy4;
 var $elm$html$Html$Lazy$lazy4 = $elm$virtual_dom$VirtualDom$lazy4;
-var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $author$project$Main$MsgLetMeRoot = F2(
 	function (a, b) {
 		return {$: 'MsgLetMeRoot', a: a, b: b};
@@ -9890,22 +9899,12 @@ var $author$project$Main$viewASTRoot = F2(
 							$elm$json$Json$Decode$succeed(
 								$author$project$Main$MsgAttachMe(root))))),
 					A2(
-					$author$project$Main$on,
+					$author$project$Main$preventDefaultOn,
 					'touchend',
 					A2(
-						$elm$json$Json$Decode$andThen,
-						function (touches) {
-							var touchCount = $elm$core$List$length(touches);
-							var _v2 = A2(
-								$elm$core$Debug$log,
-								'Detected ' + ($elm$core$String$fromInt(touchCount) + ' touches'),
-								touchCount);
-							return $elm$json$Json$Decode$succeed($author$project$Main$MsgTouchEndDetected);
-						},
-						A2(
-							$elm$json$Json$Decode$field,
-							'changedTouches',
-							$elm$json$Json$Decode$list($elm$json$Json$Decode$value)))),
+						$author$project$Main$whenNotDragging,
+						model,
+						$author$project$Main$decodeTouches(root))),
 					A2(
 					$author$project$Main$on,
 					'mousedown',
@@ -10227,7 +10226,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('ぽｊｌｒｌｆ'),
+												$elm$html$Html$Attributes$placeholder('マーカス'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(
