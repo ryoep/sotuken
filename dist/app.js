@@ -8778,7 +8778,6 @@ var $author$project$Main$MsgDblClick = {$: 'MsgDblClick'};
 var $author$project$Main$MsgDuplicate = function (a) {
 	return {$: 'MsgDuplicate', a: a};
 };
-var $author$project$Main$MsgNoOp = {$: 'MsgNoOp'};
 var $author$project$Main$MsgStartDnD = F2(
 	function (a, b) {
 		return {$: 'MsgStartDnD', a: a, b: b};
@@ -8791,7 +8790,10 @@ var $author$project$Main$decodeTouches = function (root) {
 	return A2(
 		$elm$json$Json$Decode$andThen,
 		function (touches) {
-			var _v0 = A2($elm$core$Debug$log, 'Two-finger touch detected', touches);
+			var _v0 = A2(
+				$elm$core$Debug$log,
+				'Touch points detected',
+				$elm$core$List$length(touches));
 			return ($elm$core$List$length(touches) === 2) ? $elm$json$Json$Decode$succeed(
 				$author$project$Main$MsgDuplicate(root)) : $elm$json$Json$Decode$fail('Not a two-finger touch');
 		},
@@ -9905,8 +9907,9 @@ var $author$project$Main$viewASTRoot = F2(
 					A2(
 						$elm$json$Json$Decode$andThen,
 						function (touches) {
-							var _v2 = A2($elm$core$Debug$log, 'changedTouches data', touches);
-							return $elm$json$Json$Decode$succeed($author$project$Main$MsgNoOp);
+							var _v2 = A2($elm$core$Debug$log, 'Touchend event', touches);
+							return ($elm$core$List$length(touches) === 2) ? $elm$json$Json$Decode$succeed(
+								$author$project$Main$MsgDuplicate(root)) : $elm$json$Json$Decode$fail('Not a two-finger touch');
 						},
 						A2(
 							$elm$json$Json$Decode$field,
@@ -9933,30 +9936,27 @@ var $author$project$Main$viewASTRoot = F2(
 					A2(
 					$author$project$Main$on,
 					'touchstart',
-					A2(
-						$author$project$Main$whenNotDragging,
-						model,
-						A3(
-							$elm$json$Json$Decode$map2,
-							F2(
-								function (clientX, clientY) {
-									return A4(
-										$elm$core$Debug$log,
-										'Touch start detected',
-										$author$project$Main$MsgStartDnD,
-										_Utils_Tuple2(x, y),
-										_Utils_Tuple2(clientX, clientY));
-								}),
-							A2(
-								$elm$json$Json$Decode$at,
-								_List_fromArray(
-									['changedTouches', '0', 'clientX']),
-								$elm$json$Json$Decode$float),
-							A2(
-								$elm$json$Json$Decode$at,
-								_List_fromArray(
-									['changedTouches', '0', 'clientY']),
-								$elm$json$Json$Decode$float)))),
+					A3(
+						$elm$json$Json$Decode$map2,
+						F2(
+							function (clientX, clientY) {
+								return A4(
+									$elm$core$Debug$log,
+									'Two-finger touch start detected',
+									$author$project$Main$MsgStartDnD,
+									_Utils_Tuple2(x, y),
+									_Utils_Tuple2(clientX, clientY));
+							}),
+						A2(
+							$elm$json$Json$Decode$at,
+							_List_fromArray(
+								['changedTouches', '0', 'clientX']),
+							$elm$json$Json$Decode$float),
+						A2(
+							$elm$json$Json$Decode$at,
+							_List_fromArray(
+								['changedTouches', '0', 'clientY']),
+							$elm$json$Json$Decode$float))),
 					A2(
 					$author$project$Main$preventDefaultOn,
 					'contextmenu',
@@ -10244,7 +10244,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('新しい関数名'),
+												$elm$html$Html$Attributes$placeholder('アントニ―'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(

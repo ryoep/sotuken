@@ -1911,7 +1911,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "新しい関数名" --新しい関数名
+                        , placeholder "アントニ―" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -1986,16 +1986,22 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
         --                 <| MsgAttachMe root
 
             -- touchend
-            , preventDefaultOn "touchend"
+            , (preventDefaultOn "touchend"
                 <| (Decode.field "changedTouches" (Decode.list Decode.value)
                     |> Decode.andThen
                         (\touches ->
-                            -- changedTouchesフィールドの中身をログに出力
-                            let _ = Debug.log "changedTouches data" touches
+                            let
+                                _ = Debug.log "Touchend event" touches
                             in
-                            Decode.succeed MsgNoOp -- タッチイベントのログ出力のみ確認
+                            if List.length touches == 2 then
+                                Decode.succeed (MsgDuplicate root)
+                            else
+                                Decode.fail "Not a two-finger touch"
                         )
                 )
+            )
+
+
 
 
 
@@ -2013,16 +2019,16 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                              (Decode.field "pageX" Decode.float)
                              (Decode.field "pageY" Decode.float)
 
-        -- touchstart
-        , on "touchstart"
-            <| whenNotDragging model
+            -- touchstart
+            , on "touchstart"
                 <| Decode.map2
-                    (\clientX clientY -> 
-                        Debug.log "Touch start detected"
+                    (\clientX clientY ->
+                        Debug.log "Two-finger touch start detected"
                         MsgStartDnD (x, y) (clientX, clientY)
                     )
                     (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
                     (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
+
 
 
         -- contextmenu
@@ -2057,13 +2063,14 @@ decodeTouches root =
         |> Decode.andThen
             (\touches ->
                 let
-                    _ = Debug.log "Two-finger touch detected" touches
+                    _ = Debug.log "Touch points detected" (List.length touches)
                 in
                 if List.length touches == 2 then
                     Decode.succeed (MsgDuplicate root)
                 else
                     Decode.fail "Not a two-finger touch"
             )
+
 
 
 
