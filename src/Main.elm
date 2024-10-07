@@ -379,6 +379,7 @@ type Msg
     = MsgCloneUs (ASTxy Node)
     | MsgDuplicate (ASTxy Node) -- 複製用のメッセージを追加
     | MsgNoOp
+    | MsgTwoFingerTouch -- これを追加
     | MsgLetMeRoot (ASTxy Node) Position
     | MsgMoveUs Position
     | MsgAttachMe (ASTxy Node)
@@ -465,6 +466,9 @@ update msg model =
                 newModel = cloneUs ast model
             in
             (newModel, Cmd.none)
+        MsgTwoFingerTouch ->
+            -- 2本指タッチの処理（特に何もしない場合）
+            (model, Cmd.none)
         MsgNoOp ->
             -- NoAction では何もせずそのまま model を返す
             (model, Cmd.none)
@@ -1911,7 +1915,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "あああ" --新しい関数名
+                        , placeholder "いる瓶" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -1986,6 +1990,7 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
         --            <| MsgAttachMe root
 
 
+        -- touchend
         , preventDefaultOn "touchend"
             (Decode.field "changedTouches" (Decode.list Decode.value)
                 |> Decode.andThen
@@ -1995,9 +2000,9 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                             _ = Debug.log ("Touchend with " ++ String.fromInt touchCount) touchCount
                         in
                         if touchCount == 2 then
-                            Decode.succeed (MsgDuplicate root) -- 2本指の場合に複製イベントを発行
+                            Decode.succeed (MsgDuplicate root) -- 2本指の場合に複製
                         else
-                            Decode.succeed (MsgAttachMe root) -- 通常のドラッグ終了処理
+                            Decode.succeed (MsgAttachMe root) -- 1本指の通常処理
                     )
             )
 
@@ -2018,13 +2023,30 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
 
         -- 追加
         -- touchstart
-        , on "touchstart"
-            <| whenNotDragging model
-                <| Decode.map2
-                    (\clientX clientY -> MsgStartDnD (x, y) (clientX, clientY))
-                    (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
-                    (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
+        --, on "touchstart"
+        --    <| whenNotDragging model
+        --        <| Decode.map2
+        --            (\clientX clientY -> MsgStartDnD (x, y) (clientX, clientY))
+        --            (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
+        --            (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
 
+        -- touchstart
+        , on "touchstart"
+            (Decode.field "changedTouches" (Decode.list Decode.value)
+                |> Decode.andThen
+                    (\touches ->
+                        let
+                            touchCount = List.length touches
+                            _ = Debug.log ("Touchstart with " ++ String.fromInt touchCount) touchCount
+                        in
+                        if touchCount == 2 then
+                            Decode.succeed MsgTwoFingerTouch -- 2本指のタッチを検出
+                        else
+                            Decode.map2 (\clientX clientY -> MsgStartDnD (x, y) (clientX, clientY))
+                                (Decode.at ["0", "clientX"] Decode.float)
+                                (Decode.at ["0", "clientY"] Decode.float)
+                    )
+            )
 
 
 
