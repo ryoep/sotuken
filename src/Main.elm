@@ -1915,7 +1915,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "ｆｊｌｄ" --新しい関数名
+                        , placeholder "Main." --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -1990,7 +1990,6 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
         --            <| MsgAttachMe root
 
 
-        -- touchend
         , preventDefaultOn "touchend"
             (Decode.field "changedTouches" (Decode.list Decode.value)
                 |> Decode.andThen
@@ -2000,11 +1999,13 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                             _ = Debug.log ("Touchend with " ++ String.fromInt touchCount) touchCount
                         in
                         if touchCount == 2 then
-                            Decode.succeed (MsgDuplicate root) -- 2本指の場合に複製
+                            Decode.succeed (MsgDuplicate root) -- 2本指のタッチで複製
                         else
-                            Decode.succeed (MsgAttachMe root) -- 1本指の通常処理
+                            Decode.succeed (MsgAttachMe root) -- 1本指ならドラッグ終了処理
                     )
             )
+
+
 
 
 
@@ -2023,25 +2024,13 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
 
         -- 追加
         -- touchstart
-        --, on "touchstart"
-        --    <| whenNotDragging model
-        --        <| Decode.map2
-        --            (\clientX clientY -> MsgStartDnD (x, y) (clientX, clientY))
-        --            (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
-        --            (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
-
-        -- touchstart
         , on "touchstart"
-            (Decode.field "changedTouches" (Decode.list Decode.value)
-                |> Decode.andThen
-                    (\touches ->
-                        let
-                            touchCount = List.length touches
-                            _ = Debug.log ("Touchstart detected with " ++ String.fromInt touchCount ++ " touches") touchCount
-                        in
-                        Decode.succeed MsgNoOp -- 一時的にNoOpを返してタッチの動作だけ確認
-                    )
-            )
+            <| whenNotDragging model
+                <| Decode.map2
+                    (\clientX clientY -> MsgStartDnD (x, y) (clientX, clientY))
+                    (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
+                    (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
+
 
 
 

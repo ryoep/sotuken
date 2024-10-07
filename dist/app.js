@@ -8780,7 +8780,6 @@ var $author$project$Main$MsgDblClick = {$: 'MsgDblClick'};
 var $author$project$Main$MsgDuplicate = function (a) {
 	return {$: 'MsgDuplicate', a: a};
 };
-var $author$project$Main$MsgNoOp = {$: 'MsgNoOp'};
 var $author$project$Main$MsgStartDnD = F2(
 	function (a, b) {
 		return {$: 'MsgStartDnD', a: a, b: b};
@@ -9929,19 +9928,27 @@ var $author$project$Main$viewASTRoot = F2(
 					$author$project$Main$on,
 					'touchstart',
 					A2(
-						$elm$json$Json$Decode$andThen,
-						function (touches) {
-							var touchCount = $elm$core$List$length(touches);
-							var _v3 = A2(
-								$elm$core$Debug$log,
-								'Touchstart detected with ' + ($elm$core$String$fromInt(touchCount) + ' touches'),
-								touchCount);
-							return $elm$json$Json$Decode$succeed($author$project$Main$MsgNoOp);
-						},
-						A2(
-							$elm$json$Json$Decode$field,
-							'changedTouches',
-							$elm$json$Json$Decode$list($elm$json$Json$Decode$value)))),
+						$author$project$Main$whenNotDragging,
+						model,
+						A3(
+							$elm$json$Json$Decode$map2,
+							F2(
+								function (clientX, clientY) {
+									return A2(
+										$author$project$Main$MsgStartDnD,
+										_Utils_Tuple2(x, y),
+										_Utils_Tuple2(clientX, clientY));
+								}),
+							A2(
+								$elm$json$Json$Decode$at,
+								_List_fromArray(
+									['changedTouches', '0', 'clientX']),
+								$elm$json$Json$Decode$float),
+							A2(
+								$elm$json$Json$Decode$at,
+								_List_fromArray(
+									['changedTouches', '0', 'clientY']),
+								$elm$json$Json$Decode$float)))),
 					A2(
 					$author$project$Main$preventDefaultOn,
 					'contextmenu',
@@ -10220,7 +10227,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('ｆｊｌｄ'),
+												$elm$html$Html$Attributes$placeholder('Main.'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(
