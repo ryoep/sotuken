@@ -1915,7 +1915,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "いる瓶" --新しい関数名
+                        , placeholder "ｆｊｌｄ" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -2037,16 +2037,12 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                     (\touches ->
                         let
                             touchCount = List.length touches
-                            _ = Debug.log ("Touchstart with " ++ String.fromInt touchCount) touchCount
+                            _ = Debug.log ("Touchstart detected with " ++ String.fromInt touchCount ++ " touches") touchCount
                         in
-                        if touchCount == 2 then
-                            Decode.succeed MsgTwoFingerTouch -- 2本指のタッチを検出
-                        else
-                            Decode.map2 (\clientX clientY -> MsgStartDnD (x, y) (clientX, clientY))
-                                (Decode.at ["0", "clientX"] Decode.float)
-                                (Decode.at ["0", "clientY"] Decode.float)
+                        Decode.succeed MsgNoOp -- 一時的にNoOpを返してタッチの動作だけ確認
                     )
             )
+
 
 
 
