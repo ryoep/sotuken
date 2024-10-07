@@ -1911,7 +1911,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "ｆｊｊｌｊ" --新しい関数名
+                        , placeholder "新しい関数" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -1980,27 +1980,11 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
 
          --追加
          --touchend
-        --, preventDefaultOn "touchend"
-        --    <| whenDragging model
-        --        <| Decode.succeed
-        --            <| MsgAttachMe root
-
-
-
         , preventDefaultOn "touchend"
-            (Decode.field "changedTouches" (Decode.list Decode.value)
-                |> Decode.andThen
-                    (\touches ->
-                        let
-                            touchCount = List.length touches
-                            _ = Debug.log ("Touchend with " ++ String.fromInt touchCount) touchCount
-                        in
-                        if touchCount == 2 then
-                            Decode.succeed (MsgDuplicate root) -- 2本指の場合に複製イベントを発行
-                        else
-                            Decode.fail "Not a two-finger touch"
-                    )
-            )
+            <| whenDragging model
+                <| Decode.succeed
+                    <| MsgAttachMe root
+
 
 
 
