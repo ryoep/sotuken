@@ -1911,7 +1911,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "" --マグワイア
+                        , placeholder "マグワイア" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -2000,12 +2000,30 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
 
         -- 追加
         -- touchstart
+        --, on "touchstart"
+        --    <| whenNotDragging model
+        --        <| Decode.map2
+        --            (\clientX clientY -> MsgStartDnD (x, y) (clientX, clientY))
+        --            (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
+        --            (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
+
+        -- 追加
+        -- touchstart
         , on "touchstart"
             <| whenNotDragging model
-                <| Decode.map2
-                    (\clientX clientY -> MsgStartDnD (x, y) (clientX, clientY))
+                <| Decode.map3
+                    (\clientX clientY touches -> 
+                        let
+                            touchCount = List.length touches
+                            _ = Debug.log ("Touchstart with " ++ String.fromInt touchCount) touchCount
+                        in
+                        MsgStartDnD (x, y) (clientX, clientY)
+                    )
                     (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
                     (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
+                    (Decode.field "changedTouches" (Decode.list Decode.value))
+
+
 
 
 
@@ -2023,7 +2041,7 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
 
 
         -- 二本指タッチによる複製
-        , on "Duplicate" (Decode.map (\_ -> MsgDuplicate root) (decodeTouches root))
+        --, on "Duplicate" (Decode.map (\_ -> MsgDuplicate root) (decodeTouches root))
 
 
 
