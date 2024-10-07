@@ -1911,7 +1911,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "ブルーの" --新しい関数名
+                        , placeholder "" --マグワイア
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -1981,9 +1981,9 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
          --追加
          --touchend
         , preventDefaultOn "touchend"
-           <| whenDragging model
-                 <| Decode.succeed
-                     <| MsgAttachMe root
+            <| whenDragging model
+                <| Decode.succeed
+                    <| MsgAttachMe root
 
 
 
@@ -1998,13 +1998,12 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                              (Decode.field "pageX" Decode.float)
                              (Decode.field "pageY" Decode.float)
 
-            -- touchstart
-            , on "touchstart"
+        -- 追加
+        -- touchstart
+        , on "touchstart"
+            <| whenNotDragging model
                 <| Decode.map2
-                    (\clientX clientY ->
-                        Debug.log "Two-finger touch start detected"
-                        MsgStartDnD (x, y) (clientX, clientY)
-                    )
+                    (\clientX clientY -> MsgStartDnD (x, y) (clientX, clientY))
                     (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
                     (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
 
