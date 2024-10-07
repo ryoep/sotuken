@@ -1915,7 +1915,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "じゃｆｌｄ" --新しい関数名
+                        , placeholder "マーカス" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -1997,7 +1997,7 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                     (\touches ->
                         let
                             touchCount = List.length touches
-                            _ = Debug.log ("Touchend with " ++ String.fromInt touchCount) touchCount
+                            _ = Debug.log ("Touchend detected with " ++ String.fromInt touchCount ++ " fingers") touchCount
                         in
                         if touchCount == 2 then
                             Decode.succeed (MsgDuplicate root) -- 2本指のタッチで複製
@@ -2005,6 +2005,7 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                             Decode.succeed (MsgAttachMe root) -- 1本指ならドラッグ終了処理
                     )
             )
+
 
 
 
