@@ -1911,7 +1911,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "アントニ―" --新しい関数名
+                        , placeholder "マーカス" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -1991,7 +1991,7 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                     |> Decode.andThen
                         (\touches ->
                             let
-                                _ = Debug.log "Touchend event" touches
+                                _ = Debug.log "changedTouches count" (List.length touches)
                             in
                             if List.length touches == 2 then
                                 Decode.succeed (MsgDuplicate root)
@@ -2000,6 +2000,7 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                         )
                 )
             )
+
 
 
 
