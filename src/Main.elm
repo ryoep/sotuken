@@ -380,6 +380,7 @@ type Msg
     | MsgDuplicate (ASTxy Node) -- 複製用のメッセージを追加
     | MsgNoOp
     | MsgTwoFingerTouch -- これを追加
+    | MsgTouchEndDetected -- 新しく追加したメッセージ
     | MsgLetMeRoot (ASTxy Node) Position
     | MsgMoveUs Position
     | MsgAttachMe (ASTxy Node)
@@ -469,6 +470,10 @@ update msg model =
         MsgTwoFingerTouch ->
             -- 2本指タッチの処理（特に何もしない場合）
             (model, Cmd.none)
+        MsgTouchEndDetected ->
+            -- ここではタッチエンド検知の処理を追加できます
+            -- たとえば、デバッグログを出力するだけにして、modelを返す
+            (Debug.log "Touchend detected" model, Cmd.none)
         MsgNoOp ->
             -- NoAction では何もせずそのまま model を返す
             (model, Cmd.none)
@@ -1915,7 +1920,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "マーカス" --新しい関数名
+                        , placeholder "ぽｊｌｒｌｆ" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -1990,21 +1995,21 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
         --            <| MsgAttachMe root
 
 
-        --touchend
-        , preventDefaultOn "touchend"
+        -- touchend 検証
+        , on "touchend"
             (Decode.field "changedTouches" (Decode.list Decode.value)
                 |> Decode.andThen
                     (\touches ->
                         let
                             touchCount = List.length touches
-                            _ = Debug.log ("Touchend detected with " ++ String.fromInt touchCount ++ " fingers") touchCount
+                            _ = Debug.log ("Detected " ++ String.fromInt touchCount ++ " touches") touchCount
                         in
-                        if touchCount == 2 then
-                            Decode.succeed (MsgDuplicate root) -- 2本指のタッチで複製
-                        else
-                            Decode.succeed (MsgAttachMe root) -- 1本指ならドラッグ終了処理
+                        Decode.succeed MsgTouchEndDetected -- 正しい Msg 型のイベントにする
                     )
             )
+
+
+
 
 
 
