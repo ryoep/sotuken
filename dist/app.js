@@ -8789,13 +8789,11 @@ var $author$project$Main$MsgCloneUs = function (a) {
 	return {$: 'MsgCloneUs', a: a};
 };
 var $author$project$Main$MsgDblClick = {$: 'MsgDblClick'};
+var $author$project$Main$MsgNoOp = {$: 'MsgNoOp'};
 var $author$project$Main$MsgStartDnD = F2(
 	function (a, b) {
 		return {$: 'MsgStartDnD', a: a, b: b};
 	});
-var $author$project$Main$MsgUpdateTouchCount = function (a) {
-	return {$: 'MsgUpdateTouchCount', a: a};
-};
 var $author$project$Main$ToBottom = {$: 'ToBottom'};
 var $author$project$Main$ToRight = {$: 'ToRight'};
 var $elm$json$Json$Decode$value = _Json_decodeValue;
@@ -9936,17 +9934,8 @@ var $author$project$Main$viewASTRoot = F2(
 					A2(
 					$author$project$Main$on,
 					'touchstart',
-					A2(
-						$elm$json$Json$Decode$map,
-						function (touches) {
-							var touchCount = $elm$core$List$length(touches);
-							return $author$project$Main$MsgUpdateTouchCount(
-								A2($elm$core$Debug$log, 'Touches: ', touchCount));
-						},
-						A2(
-							$elm$json$Json$Decode$field,
-							'changedTouches',
-							$elm$json$Json$Decode$list($elm$json$Json$Decode$value)))),
+					$elm$json$Json$Decode$succeed(
+						A2($elm$core$Debug$log, 'Touchstart event triggered', $author$project$Main$MsgNoOp))),
 					A2(
 					$author$project$Main$preventDefaultOn,
 					'contextmenu',
@@ -10229,7 +10218,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('新しい関数'),
+												$elm$html$Html$Attributes$placeholder('クリック'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(
