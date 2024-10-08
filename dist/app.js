@@ -6559,6 +6559,7 @@ var $author$project$Main$loadProgram = F2(
 			return model;
 		}
 	});
+var $elm$core$Debug$log = _Debug_log;
 var $author$project$Main$makeNewRoutine = function (model) {
 	var newEntryBrick = {
 		getBrickCommand: $author$project$Main$CommandNOP,
@@ -8407,6 +8408,7 @@ var $author$project$Main$update = F2(
 					$elm$core$Platform$Cmd$none);
 			case 'MsgUpdateTouchCount':
 				var touchCount = msg.a;
+				var _v1 = A2($elm$core$Debug$log, 'Touch count: ', touchCount);
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
@@ -8421,9 +8423,9 @@ var $author$project$Main$update = F2(
 					A3($author$project$Main$startDnD, rootXY, mouseXY, model),
 					$elm$core$Platform$Cmd$none);
 			case 'MsgLetMeRoot':
-				var _v1 = msg.a;
-				var rootXY = _v1.a;
-				var ast = _v1.b;
+				var _v2 = msg.a;
+				var rootXY = _v2.a;
+				var ast = _v2.b;
 				var mouseXY = msg.b;
 				return _Utils_Tuple2(
 					A3(
@@ -8441,9 +8443,9 @@ var $author$project$Main$update = F2(
 					A2($author$project$Main$moveUs, mouseXY, model),
 					$elm$core$Platform$Cmd$none);
 			case 'MsgAttachMe':
-				var _v2 = msg.a;
-				var rootXY = _v2.a;
-				var ast = _v2.b;
+				var _v3 = msg.a;
+				var rootXY = _v3.a;
+				var ast = _v3.b;
 				return _Utils_Tuple2(
 					A2(
 						$author$project$Main$attachMe,
@@ -10226,7 +10228,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('150'),
+												$elm$html$Html$Attributes$placeholder('1214'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(

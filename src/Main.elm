@@ -463,6 +463,9 @@ update msg model =
         MsgCloneTouch ast ->
             ( cloneUs ast model, Cmd.none )
         MsgUpdateTouchCount touchCount ->
+            let
+                _ = Debug.log "Touch count: " touchCount
+            in
             ({ model | touchCount = touchCount }, Cmd.none)
         MsgNoOp ->
             -- NoAction では何もせずそのまま model を返す
@@ -1910,7 +1913,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "150" --新しい関数名
+                        , placeholder "1214" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -2016,6 +2019,7 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
         , on "touchstart"
             <| Decode.map (\touches -> MsgUpdateTouchCount (List.length touches))
                 (Decode.field "changedTouches" (Decode.list Decode.value))
+
 
 
 
