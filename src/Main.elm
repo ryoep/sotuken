@@ -1905,7 +1905,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "レアルv" --新しい関数名
+                        , placeholder "新しい関数" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -2012,7 +2012,7 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
               <| whenLeftButtonIsDown
                   <| Decode.succeed MsgDblClick
 
-        , preventDefaultOn "Duplicate"
+        , preventDefaultOn "touchend"
               <| decodeTouches root  -- 修正した関数にASTxy Nodeを渡す
 
 

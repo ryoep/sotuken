@@ -9968,7 +9968,7 @@ var $author$project$Main$viewASTRoot = F2(
 						$elm$json$Json$Decode$succeed($author$project$Main$MsgDblClick))),
 					A2(
 					$author$project$Main$preventDefaultOn,
-					'Duplicate',
+					'touchend',
 					$author$project$Main$decodeTouches(root))
 				]),
 			_List_fromArray(
@@ -10230,7 +10230,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('レアルv'),
+												$elm$html$Html$Attributes$placeholder('新しい関数'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(
