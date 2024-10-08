@@ -8418,37 +8418,27 @@ var $author$project$Main$update = F2(
 			case 'MsgStartDnD':
 				var rootXY = msg.a;
 				var mouseXY = msg.b;
-				var maybeAst = A2(
-					$elm$core$List$filter,
-					function (_v2) {
-						var xy = _v2.a;
-						return _Utils_eq(xy, rootXY);
-					},
-					model.getASTRoots);
-				var timerCmd = function () {
-					if (!maybeAst.b) {
-						return $elm$core$Platform$Cmd$none;
-					} else {
-						var ast = maybeAst.a;
-						return A2(
-							$elm$core$Task$perform,
-							$elm$core$Basics$always(
-								$author$project$Main$MsgTimerFinished(ast)),
-							$elm$core$Process$sleep(2000));
-					}
-				}();
 				return _Utils_Tuple2(
 					A3($author$project$Main$startDnD, rootXY, mouseXY, model),
-					timerCmd);
+					$elm$core$Platform$Cmd$none);
+			case 'MsgStartTimer':
+				var ast = msg.a;
+				return _Utils_Tuple2(
+					model,
+					A2(
+						$elm$core$Task$perform,
+						$elm$core$Basics$always(
+							$author$project$Main$MsgTimerFinished(ast)),
+						$elm$core$Process$sleep(2000)));
 			case 'MsgTimerFinished':
 				var ast = msg.a;
 				return _Utils_Tuple2(
 					A2($author$project$Main$cloneUs, ast, model),
 					$elm$core$Platform$Cmd$none);
 			case 'MsgLetMeRoot':
-				var _v3 = msg.a;
-				var rootXY = _v3.a;
-				var ast = _v3.b;
+				var _v1 = msg.a;
+				var rootXY = _v1.a;
+				var ast = _v1.b;
 				var mouseXY = msg.b;
 				return _Utils_Tuple2(
 					A3(
@@ -8463,11 +8453,11 @@ var $author$project$Main$update = F2(
 			case 'MsgMoveUs':
 				var mouseXY = msg.a;
 				var isTouch = function () {
-					var _v4 = A2(
+					var _v2 = A2(
 						$elm$json$Json$Decode$decodeValue,
 						$author$project$Main$isTouchEvent,
 						$elm$json$Json$Encode$object(_List_Nil));
-					if ((_v4.$ === 'Ok') && _v4.a) {
+					if ((_v2.$ === 'Ok') && _v2.a) {
 						return true;
 					} else {
 						return false;
@@ -8478,9 +8468,9 @@ var $author$project$Main$update = F2(
 					A2($author$project$Main$moveUs, mouseXY, model),
 					cancelTimer);
 			case 'MsgAttachMe':
-				var _v5 = msg.a;
-				var rootXY = _v5.a;
-				var ast = _v5.b;
+				var _v3 = msg.a;
+				var rootXY = _v3.a;
+				var ast = _v3.b;
 				return _Utils_Tuple2(
 					A2(
 						$author$project$Main$attachMe,
@@ -8825,6 +8815,9 @@ var $author$project$Main$MsgStartDnD = F2(
 	function (a, b) {
 		return {$: 'MsgStartDnD', a: a, b: b};
 	});
+var $author$project$Main$MsgStartTimer = function (a) {
+	return {$: 'MsgStartTimer', a: a};
+};
 var $author$project$Main$ToBottom = {$: 'ToBottom'};
 var $author$project$Main$ToRight = {$: 'ToRight'};
 var $elm$virtual_dom$VirtualDom$lazy3 = _VirtualDom_lazy3;
@@ -9962,10 +9955,7 @@ var $author$project$Main$viewASTRoot = F2(
 							$elm$json$Json$Decode$map2,
 							F2(
 								function (clientX, clientY) {
-									return A2(
-										$author$project$Main$MsgStartDnD,
-										_Utils_Tuple2(x, y),
-										_Utils_Tuple2(clientX, clientY));
+									return $author$project$Main$MsgStartTimer(root);
 								}),
 							A2(
 								$elm$json$Json$Decode$at,
@@ -10255,7 +10245,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('ブルーの'),
+												$elm$html$Html$Attributes$placeholder('マーカス'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(
