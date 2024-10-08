@@ -1905,7 +1905,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "新しい関数" --新しい関数名
+                        , placeholder "マーカス" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -1974,12 +1974,24 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
 
          --追加
          --touchend
+        --, preventDefaultOn "touchend"
+        --    <| whenDragging model
+        --        <| Decode.succeed
+        --            <| MsgAttachMe root
+
         , preventDefaultOn "touchend"
-            <| whenDragging model
-                <| Decode.succeed
-                    <| MsgAttachMe root
-
-
+              <| (whenDragging model
+                  (Decode.field "changedTouches" (Decode.list Decode.value)
+                  |> Decode.andThen
+                      (\touches ->
+                          if List.length touches == 2 then
+                              Decode.succeed (MsgCloneTouch root) -- 二本指なら複製メッセージを送信
+                          else
+                              Decode.succeed (MsgAttachMe root) -- それ以外は通常の処理
+                      )
+                  )
+                 )
+                 
 
 
         -- mousedown

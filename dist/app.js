@@ -8772,6 +8772,9 @@ var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('
 var $author$project$Main$MsgAttachMe = function (a) {
 	return {$: 'MsgAttachMe', a: a};
 };
+var $author$project$Main$MsgCloneTouch = function (a) {
+	return {$: 'MsgCloneTouch', a: a};
+};
 var $author$project$Main$MsgCloneUs = function (a) {
 	return {$: 'MsgCloneUs', a: a};
 };
@@ -8782,9 +8785,6 @@ var $author$project$Main$MsgStartDnD = F2(
 	});
 var $author$project$Main$ToBottom = {$: 'ToBottom'};
 var $author$project$Main$ToRight = {$: 'ToRight'};
-var $author$project$Main$MsgCloneTouch = function (a) {
-	return {$: 'MsgCloneTouch', a: a};
-};
 var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $author$project$Main$decodeTouches = function (astxy) {
 	return A2(
@@ -9903,8 +9903,17 @@ var $author$project$Main$viewASTRoot = F2(
 					A2(
 						$author$project$Main$whenDragging,
 						model,
-						$elm$json$Json$Decode$succeed(
-							$author$project$Main$MsgAttachMe(root)))),
+						A2(
+							$elm$json$Json$Decode$andThen,
+							function (touches) {
+								return ($elm$core$List$length(touches) === 2) ? $elm$json$Json$Decode$succeed(
+									$author$project$Main$MsgCloneTouch(root)) : $elm$json$Json$Decode$succeed(
+									$author$project$Main$MsgAttachMe(root));
+							},
+							A2(
+								$elm$json$Json$Decode$field,
+								'changedTouches',
+								$elm$json$Json$Decode$list($elm$json$Json$Decode$value))))),
 					A2(
 					$author$project$Main$on,
 					'mousedown',
@@ -10230,7 +10239,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('新しい関数'),
+												$elm$html$Html$Attributes$placeholder('マーカス'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(
