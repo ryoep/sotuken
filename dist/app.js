@@ -5581,14 +5581,7 @@ var $author$project$Main$MsgLoaded = function (a) {
 var $author$project$Main$MsgSelected = function (a) {
 	return {$: 'MsgSelected', a: a};
 };
-var $author$project$Main$MsgTimerFinished = function (a) {
-	return {$: 'MsgTimerFinished', a: a};
-};
 var $author$project$Main$Start = {$: 'Start'};
-var $elm$core$Basics$always = F2(
-	function (a, _v0) {
-		return a;
-	});
 var $author$project$Main$ASTne = F3(
 	function (a, b, c) {
 		return {$: 'ASTne', a: a, b: b, c: c};
@@ -6041,7 +6034,6 @@ var $author$project$Main$completeDblquote = F3(
 				return text;
 		}
 	});
-var $elm$json$Json$Decode$decodeValue = _Json_run;
 var $elm$file$File$Select$file = F2(
 	function (mimes, toMsg) {
 		return A2(
@@ -6101,18 +6093,6 @@ var $author$project$Main$getVarNames = function (model) {
 			varNames: $elm$core$Set$fromList(varList)
 		});
 };
-var $elm$json$Json$Decode$field = _Json_decodeField;
-var $elm$json$Json$Decode$list = _Json_decodeList;
-var $elm$json$Json$Decode$value = _Json_decodeValue;
-var $author$project$Main$isTouchEvent = A2(
-	$elm$json$Json$Decode$map,
-	function (touches) {
-		return $elm$core$List$length(touches) > 0;
-	},
-	A2(
-		$elm$json$Json$Decode$field,
-		'changedTouches',
-		$elm$json$Json$Decode$list($elm$json$Json$Decode$value)));
 var $author$project$Main$letMeRoot = F2(
 	function (newRoot, model) {
 		var newRootXY = newRoot.a;
@@ -6165,6 +6145,7 @@ var $author$project$Main$letMeRoot = F2(
 			return model;
 		}
 	});
+var $elm$json$Json$Decode$field = _Json_decodeField;
 var $elm$json$Json$Decode$andThen = _Json_andThen;
 var $elm$json$Json$Decode$lazy = function (thunk) {
 	return A2(
@@ -6537,6 +6518,7 @@ var $author$project$Main$astxyDecode = A3(
 	$author$project$Main$ASTxy,
 	A2($elm$json$Json$Decode$field, 'position', $author$project$Main$positionDecode),
 	A2($elm$json$Json$Decode$field, 'astne', $author$project$Main$astneDecode));
+var $elm$json$Json$Decode$list = _Json_decodeList;
 var $author$project$Main$astRootsDecode = $elm$json$Json$Decode$list($author$project$Main$astxyDecode);
 var $elm$json$Json$Decode$decodeString = _Json_runOnString;
 var $author$project$Main$loadProgram = F2(
@@ -7275,6 +7257,10 @@ var $author$project$Main$move_wait = F2(
 			{wait_remaining: 0});
 	});
 var $author$project$Main$MsgRun = {$: 'MsgRun'};
+var $elm$core$Basics$always = F2(
+	function (a, _v0) {
+		return a;
+	});
 var $elm$core$Process$sleep = _Process_sleep;
 var $author$project$Main$proceed = A2(
 	$elm$core$Task$perform,
@@ -7343,19 +7329,6 @@ var $author$project$Main$moveUs = F2(
 				getDnDInfo: newInfo
 			});
 	});
-var $elm$json$Json$Encode$object = function (pairs) {
-	return _Json_wrap(
-		A3(
-			$elm$core$List$foldl,
-			F2(
-				function (_v0, obj) {
-					var k = _v0.a;
-					var v = _v0.b;
-					return A3(_Json_addField, k, v, obj);
-				}),
-			_Json_emptyObject(_Utils_Tuple0),
-			pairs));
-};
 var $author$project$Main$getRoutine = F2(
 	function (roots, name) {
 		getRoutine:
@@ -7977,6 +7950,19 @@ var $author$project$Main$brickTypeEncode = function (brickType) {
 			return $elm$json$Json$Encode$string('SpacerBrick');
 	}
 };
+var $elm$json$Json$Encode$object = function (pairs) {
+	return _Json_wrap(
+		A3(
+			$elm$core$List$foldl,
+			F2(
+				function (_v0, obj) {
+					var k = _v0.a;
+					var v = _v0.b;
+					return A3(_Json_addField, k, v, obj);
+				}),
+			_Json_emptyObject(_Utils_Tuple0),
+			pairs));
+};
 var $author$project$Main$cpToString = function (cp) {
 	switch (cp.$) {
 		case 'Eq':
@@ -8413,6 +8399,11 @@ var $author$project$Main$update = F2(
 				return _Utils_Tuple2(
 					A2($author$project$Main$cloneUs, ast, model),
 					$elm$core$Platform$Cmd$none);
+			case 'MsgCloneTouch':
+				var ast = msg.a;
+				return _Utils_Tuple2(
+					A2($author$project$Main$cloneUs, ast, model),
+					$elm$core$Platform$Cmd$none);
 			case 'MsgNoOp':
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			case 'MsgStartDnD':
@@ -8420,20 +8411,6 @@ var $author$project$Main$update = F2(
 				var mouseXY = msg.b;
 				return _Utils_Tuple2(
 					A3($author$project$Main$startDnD, rootXY, mouseXY, model),
-					$elm$core$Platform$Cmd$none);
-			case 'MsgStartTimer':
-				var ast = msg.a;
-				return _Utils_Tuple2(
-					model,
-					A2(
-						$elm$core$Task$perform,
-						$elm$core$Basics$always(
-							$author$project$Main$MsgTimerFinished(ast)),
-						$elm$core$Process$sleep(2000)));
-			case 'MsgTimerFinished':
-				var ast = msg.a;
-				return _Utils_Tuple2(
-					A2($author$project$Main$cloneUs, ast, model),
 					$elm$core$Platform$Cmd$none);
 			case 'MsgLetMeRoot':
 				var _v1 = msg.a;
@@ -8452,25 +8429,13 @@ var $author$project$Main$update = F2(
 					$elm$core$Platform$Cmd$none);
 			case 'MsgMoveUs':
 				var mouseXY = msg.a;
-				var isTouch = function () {
-					var _v2 = A2(
-						$elm$json$Json$Decode$decodeValue,
-						$author$project$Main$isTouchEvent,
-						$elm$json$Json$Encode$object(_List_Nil));
-					if ((_v2.$ === 'Ok') && _v2.a) {
-						return true;
-					} else {
-						return false;
-					}
-				}();
-				var cancelTimer = isTouch ? $elm$core$Platform$Cmd$none : $elm$core$Platform$Cmd$none;
 				return _Utils_Tuple2(
 					A2($author$project$Main$moveUs, mouseXY, model),
-					cancelTimer);
+					$elm$core$Platform$Cmd$none);
 			case 'MsgAttachMe':
-				var _v3 = msg.a;
-				var rootXY = _v3.a;
-				var ast = _v3.b;
+				var _v2 = msg.a;
+				var rootXY = _v2.a;
+				var ast = _v2.b;
 				return _Utils_Tuple2(
 					A2(
 						$author$project$Main$attachMe,
@@ -8815,11 +8780,24 @@ var $author$project$Main$MsgStartDnD = F2(
 	function (a, b) {
 		return {$: 'MsgStartDnD', a: a, b: b};
 	});
-var $author$project$Main$MsgStartTimer = function (a) {
-	return {$: 'MsgStartTimer', a: a};
-};
 var $author$project$Main$ToBottom = {$: 'ToBottom'};
 var $author$project$Main$ToRight = {$: 'ToRight'};
+var $author$project$Main$MsgCloneTouch = function (a) {
+	return {$: 'MsgCloneTouch', a: a};
+};
+var $elm$json$Json$Decode$value = _Json_decodeValue;
+var $author$project$Main$decodeTouches = function (astxy) {
+	return A2(
+		$elm$json$Json$Decode$andThen,
+		function (touches) {
+			return ($elm$core$List$length(touches) === 2) ? $elm$json$Json$Decode$succeed(
+				$author$project$Main$MsgCloneTouch(astxy)) : $elm$json$Json$Decode$fail('Not a two-finger touch');
+		},
+		A2(
+			$elm$json$Json$Decode$field,
+			'changedTouches',
+			$elm$json$Json$Decode$list($elm$json$Json$Decode$value)));
+};
 var $elm$virtual_dom$VirtualDom$lazy3 = _VirtualDom_lazy3;
 var $elm$html$Html$Lazy$lazy3 = $elm$virtual_dom$VirtualDom$lazy3;
 var $elm$virtual_dom$VirtualDom$lazy4 = _VirtualDom_lazy4;
@@ -9955,7 +9933,10 @@ var $author$project$Main$viewASTRoot = F2(
 							$elm$json$Json$Decode$map2,
 							F2(
 								function (clientX, clientY) {
-									return $author$project$Main$MsgStartTimer(root);
+									return A2(
+										$author$project$Main$MsgStartDnD,
+										_Utils_Tuple2(x, y),
+										_Utils_Tuple2(clientX, clientY));
 								}),
 							A2(
 								$elm$json$Json$Decode$at,
@@ -9984,7 +9965,11 @@ var $author$project$Main$viewASTRoot = F2(
 					$author$project$Main$on,
 					'dblclick',
 					$author$project$Main$whenLeftButtonIsDown(
-						$elm$json$Json$Decode$succeed($author$project$Main$MsgDblClick)))
+						$elm$json$Json$Decode$succeed($author$project$Main$MsgDblClick))),
+					A2(
+					$author$project$Main$preventDefaultOn,
+					'Duplicate',
+					$author$project$Main$decodeTouches(root))
 				]),
 			_List_fromArray(
 				[
@@ -10245,7 +10230,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('ひっこ'),
+												$elm$html$Html$Attributes$placeholder('レアルv'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(
