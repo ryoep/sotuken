@@ -8789,13 +8789,11 @@ var $author$project$Main$MsgCloneUs = function (a) {
 	return {$: 'MsgCloneUs', a: a};
 };
 var $author$project$Main$MsgDblClick = {$: 'MsgDblClick'};
+var $author$project$Main$MsgNoOp = {$: 'MsgNoOp'};
 var $author$project$Main$MsgStartDnD = F2(
 	function (a, b) {
 		return {$: 'MsgStartDnD', a: a, b: b};
 	});
-var $author$project$Main$MsgUpdateTouchCount = function (a) {
-	return {$: 'MsgUpdateTouchCount', a: a};
-};
 var $author$project$Main$ToBottom = {$: 'ToBottom'};
 var $author$project$Main$ToRight = {$: 'ToRight'};
 var $elm$json$Json$Decode$value = _Json_decodeValue;
@@ -9939,11 +9937,11 @@ var $author$project$Main$viewASTRoot = F2(
 					A2(
 						$elm$json$Json$Decode$map,
 						function (touches) {
-							var touchCount = $elm$core$List$length(touches);
 							return A2(
 								$elm$core$Debug$log,
-								'Touch count: ' + $elm$core$String$fromInt(touchCount),
-								$author$project$Main$MsgUpdateTouchCount(touchCount));
+								'Touches list length: ' + $elm$core$String$fromInt(
+									$elm$core$List$length(touches)),
+								$author$project$Main$MsgNoOp);
 						},
 						A2(
 							$elm$json$Json$Decode$field,
@@ -10236,7 +10234,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('ｍふぁｌｍぇ'),
+												$elm$html$Html$Attributes$placeholder('まこｋじょ'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(

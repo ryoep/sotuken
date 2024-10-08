@@ -1913,7 +1913,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "ｍふぁｌｍぇ" --新しい関数名
+                        , placeholder "まこｋじょ" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -2025,10 +2025,10 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
 
         , on "touchstart"
             <| Decode.map (\touches -> 
-                let touchCount = List.length touches in
-                Debug.log ("Touch count: " ++ String.fromInt touchCount) (MsgUpdateTouchCount touchCount)
+                Debug.log ("Touches list length: " ++ String.fromInt (List.length touches)) MsgNoOp
             )
             (Decode.field "changedTouches" (Decode.list (Decode.at [ "clientX" ] Decode.float)))
+
 
 
 
