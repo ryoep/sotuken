@@ -377,7 +377,6 @@ subscriptions model =
 
 type Msg
     = MsgCloneUs (ASTxy Node)
-    | MsgStartTimer (ASTxy Node)
     | MsgTimerFinished (ASTxy Node)
     | MsgNoOp
     | MsgLetMeRoot (ASTxy Node) Position
@@ -464,18 +463,54 @@ update msg model =
         --MsgStartDnD rootXY mouseXY ->
         --    ( startDnD rootXY mouseXY model, Cmd.none )
         MsgStartDnD rootXY mouseXY ->
-            -- ドラッグ開始時に複製のタイマーをキャンセル
-            (startDnD rootXY mouseXY model, Cmd.none)
-        MsgStartTimer ast ->
-            -- 2秒後にMsgTimerFinishedを発行するタイマーを設定
-            (model, Process.sleep 2000 |> Task.perform (always (MsgTimerFinished ast)))
+            let
+                maybeAst = List.filter (\(ASTxy xy _) -> xy == rootXY) model.getASTRoots
+                timerCmd =
+                    case maybeAst of
+                        [] -> Cmd.none
+                        (ast :: _) ->
+                            let
+                                isTouch = 
+                                    case Decode.decodeValue isTouchEvent (Encode.object []) of
+                                        Ok True -> True
+                                        Ok False -> False
+                                        _ -> False
+                            in
+                            if isTouch then
+                                -- タッチイベントの場合、長押しタイマーを設定
+                                Process.sleep 2000 |> Task.perform (always (MsgTimerFinished ast))
+                            else
+                                Cmd.none
+            in
+            (startDnD rootXY mouseXY model, timerCmd)
+
         MsgTimerFinished ast ->
             -- タイマーが終了したら複製処理を実行
             (cloneUs ast model, Cmd.none)
         MsgLetMeRoot (ASTxy rootXY ast) mouseXY ->
             ( model |> letMeRoot (ASTxy rootXY ast) |> startDnD rootXY mouseXY, Cmd.none )
+        --MsgMoveUs mouseXY ->
+        --    ( moveUs mouseXY model, Cmd.none )
         MsgMoveUs mouseXY ->
-            ( moveUs mouseXY model, Cmd.none )
+            let
+                isTouch = 
+                    case Decode.decodeValue isTouchEvent (Encode.object []) of
+                        Ok True -> True
+                        Ok False -> False
+                        _ -> False
+
+                cancelTimer =
+                    if isTouch then
+                        -- タッチイベントの場合、タイマーキャンセル
+                        Cmd.none
+                    else
+                        -- それ以外の場合
+                        Cmd.none
+            in
+            (moveUs mouseXY model, cancelTimer)
+
+
+
         MsgAttachMe (ASTxy rootXY ast) ->
             ( model |> stopDnD rootXY |> attachMe (ASTxy rootXY ast), Cmd.none )
         MsgInputChanged xy place text ->
@@ -1913,7 +1948,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "マーカス" --新しい関数名
+                        , placeholder "新しい関数目" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -2000,12 +2035,10 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                              (Decode.field "pageX" Decode.float)
                              (Decode.field "pageY" Decode.float)
 
-        -- 追加
-        -- touchstart
         , on "touchstart"
             <| whenNotDragging model
                 <| Decode.map2
-                    (\clientX clientY -> MsgStartTimer root)
+                    (\clientX clientY -> MsgStartDnD (x, y) (clientX, clientY))
                     (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
                     (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
 
@@ -2036,6 +2069,11 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
         , ( "R", lazy4 viewAST model ( x + interval model, y ) ToRight r )
         , ( "B", lazy4 viewAST model (x, y + interval model ) ToBottom b )
         ]
+
+isTouchEvent : Decoder Bool
+isTouchEvent =
+    Decode.field "changedTouches" (Decode.list Decode.value)
+        |> Decode.map (\touches -> List.length touches > 0)
 
 
 
