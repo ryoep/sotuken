@@ -464,18 +464,11 @@ update msg model =
         --MsgStartDnD rootXY mouseXY ->
         --    ( startDnD rootXY mouseXY model, Cmd.none )
         MsgStartDnD rootXY mouseXY ->
-            -- 位置(rootXY)に該当するASTxyを取得し、タイマーを開始する
-            let
-                maybeAst = List.filter (\(ASTxy xy _) -> xy == rootXY) model.getASTRoots
-                timerCmd =
-                    case maybeAst of
-                        [] -> Cmd.none  -- 該当するASTがない場合は何もしない
-                        (ast :: _) -> Process.sleep 2000 |> Task.perform (always (MsgTimerFinished ast))
-            in
-            (startDnD rootXY mouseXY model, timerCmd)
-        MsgStartTimer _ ->
-            -- TODO: 必要な処理をここに追加する
-            Debug.todo "タイマーの処理を追加してください"
+            -- ドラッグ開始時に複製のタイマーをキャンセル
+            (startDnD rootXY mouseXY model, Cmd.none)
+        MsgStartTimer ast ->
+            -- 2秒後にMsgTimerFinishedを発行するタイマーを設定
+            (model, Process.sleep 2000 |> Task.perform (always (MsgTimerFinished ast)))
         MsgTimerFinished ast ->
             -- タイマーが終了したら複製処理を実行
             (cloneUs ast model, Cmd.none)
@@ -1920,7 +1913,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "新しい関数名お" --新しい関数名
+                        , placeholder "マーカス" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -2012,7 +2005,7 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
         , on "touchstart"
             <| whenNotDragging model
                 <| Decode.map2
-                    (\clientX clientY -> MsgStartDnD (x, y) (clientX, clientY))
+                    (\clientX clientY -> MsgStartTimer root)
                     (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
                     (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
 
