@@ -9948,7 +9948,12 @@ var $author$project$Main$viewASTRoot = F2(
 						A2(
 							$elm$json$Json$Decode$field,
 							'changedTouches',
-							$elm$json$Json$Decode$list($elm$json$Json$Decode$value)))),
+							$elm$json$Json$Decode$list(
+								A2(
+									$elm$json$Json$Decode$at,
+									_List_fromArray(
+										['clientX']),
+									$elm$json$Json$Decode$float))))),
 					A2(
 					$author$project$Main$preventDefaultOn,
 					'contextmenu',
@@ -10231,7 +10236,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('まこ'),
+												$elm$html$Html$Attributes$placeholder('ｍふぁｌｍぇ'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(
