@@ -9939,8 +9939,11 @@ var $author$project$Main$viewASTRoot = F2(
 					A2(
 						$elm$json$Json$Decode$map,
 						function (touches) {
-							return $author$project$Main$MsgUpdateTouchCount(
-								$elm$core$List$length(touches));
+							return A2(
+								$elm$core$Debug$log,
+								'Touchstart triggered',
+								$author$project$Main$MsgUpdateTouchCount(
+									$elm$core$List$length(touches)));
 						},
 						A2(
 							$elm$json$Json$Decode$field,
@@ -10228,7 +10231,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('1214'),
+												$elm$html$Html$Attributes$placeholder('マネージャー'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(
