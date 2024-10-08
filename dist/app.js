@@ -9937,10 +9937,10 @@ var $author$project$Main$viewASTRoot = F2(
 					A2(
 						$elm$json$Json$Decode$map,
 						function (touches) {
-							var touchCount = $elm$core$List$length(touches);
 							return A2(
 								$elm$core$Debug$log,
-								'Touches list length: ' + $elm$core$String$fromInt(touchCount),
+								'Touches: ' + $elm$core$String$fromInt(
+									$elm$core$List$length(touches)),
 								$author$project$Main$MsgNoOp);
 						},
 						A2(
@@ -10229,7 +10229,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('まｆ－かｊ'),
+												$elm$html$Html$Attributes$placeholder('ろｋ'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(
