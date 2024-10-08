@@ -8789,13 +8789,11 @@ var $author$project$Main$MsgCloneUs = function (a) {
 	return {$: 'MsgCloneUs', a: a};
 };
 var $author$project$Main$MsgDblClick = {$: 'MsgDblClick'};
+var $author$project$Main$MsgNoOp = {$: 'MsgNoOp'};
 var $author$project$Main$MsgStartDnD = F2(
 	function (a, b) {
 		return {$: 'MsgStartDnD', a: a, b: b};
 	});
-var $author$project$Main$MsgUpdateTouchCount = function (a) {
-	return {$: 'MsgUpdateTouchCount', a: a};
-};
 var $author$project$Main$ToBottom = {$: 'ToBottom'};
 var $author$project$Main$ToRight = {$: 'ToRight'};
 var $elm$json$Json$Decode$value = _Json_decodeValue;
@@ -8815,6 +8813,7 @@ var $elm$virtual_dom$VirtualDom$lazy3 = _VirtualDom_lazy3;
 var $elm$html$Html$Lazy$lazy3 = $elm$virtual_dom$VirtualDom$lazy3;
 var $elm$virtual_dom$VirtualDom$lazy4 = _VirtualDom_lazy4;
 var $elm$html$Html$Lazy$lazy4 = $elm$virtual_dom$VirtualDom$lazy4;
+var $elm$core$Debug$toString = _Debug_toString;
 var $author$project$Main$MsgLetMeRoot = F2(
 	function (a, b) {
 		return {$: 'MsgLetMeRoot', a: a, b: b};
@@ -9939,8 +9938,10 @@ var $author$project$Main$viewASTRoot = F2(
 					A2(
 						$elm$json$Json$Decode$map,
 						function (touches) {
-							return $author$project$Main$MsgUpdateTouchCount(
-								$elm$core$List$length(touches));
+							return A2(
+								$elm$core$Debug$log,
+								'Touches data: ' + $elm$core$Debug$toString(touches),
+								$author$project$Main$MsgNoOp);
 						},
 						A2(
 							$elm$json$Json$Decode$field,
@@ -10233,7 +10234,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('びかーりお'),
+												$elm$html$Html$Attributes$placeholder('かｊｌふぁｋぇｋ'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(
