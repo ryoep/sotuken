@@ -469,18 +469,8 @@ update msg model =
                     case maybeAst of
                         [] -> Cmd.none
                         (ast :: _) ->
-                            let
-                                isTouch = 
-                                    case Decode.decodeValue isTouchEvent (Encode.object []) of
-                                        Ok True -> True
-                                        Ok False -> False
-                                        _ -> False
-                            in
-                            if isTouch then
-                                -- タッチイベントの場合、長押しタイマーを設定
-                                Process.sleep 2000 |> Task.perform (always (MsgTimerFinished ast))
-                            else
-                                Cmd.none
+                            -- タッチイベントの場合、長押しタイマーを設定
+                            Process.sleep 2000 |> Task.perform (always (MsgTimerFinished ast))
             in
             (startDnD rootXY mouseXY model, timerCmd)
 
@@ -493,10 +483,9 @@ update msg model =
         --    ( moveUs mouseXY model, Cmd.none )
         MsgMoveUs mouseXY ->
             let
-                isTouch = 
+                isTouch =
                     case Decode.decodeValue isTouchEvent (Encode.object []) of
                         Ok True -> True
-                        Ok False -> False
                         _ -> False
 
                 cancelTimer =
@@ -504,7 +493,6 @@ update msg model =
                         -- タッチイベントの場合、タイマーキャンセル
                         Cmd.none
                     else
-                        -- それ以外の場合
                         Cmd.none
             in
             (moveUs mouseXY model, cancelTimer)
@@ -1948,7 +1936,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "新しい関数目" --新しい関数名
+                        , placeholder "ブルーの" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
