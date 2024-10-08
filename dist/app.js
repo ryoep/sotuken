@@ -5581,7 +5581,14 @@ var $author$project$Main$MsgLoaded = function (a) {
 var $author$project$Main$MsgSelected = function (a) {
 	return {$: 'MsgSelected', a: a};
 };
+var $author$project$Main$MsgTimerFinished = function (a) {
+	return {$: 'MsgTimerFinished', a: a};
+};
 var $author$project$Main$Start = {$: 'Start'};
+var $elm$core$Basics$always = F2(
+	function (a, _v0) {
+		return a;
+	});
 var $author$project$Main$ASTne = F3(
 	function (a, b, c) {
 		return {$: 'ASTne', a: a, b: b, c: c};
@@ -7257,10 +7264,6 @@ var $author$project$Main$move_wait = F2(
 			{wait_remaining: 0});
 	});
 var $author$project$Main$MsgRun = {$: 'MsgRun'};
-var $elm$core$Basics$always = F2(
-	function (a, _v0) {
-		return a;
-	});
 var $elm$core$Process$sleep = _Process_sleep;
 var $author$project$Main$proceed = A2(
 	$elm$core$Task$perform,
@@ -8391,6 +8394,7 @@ var $author$project$Main$stopDnD = F2(
 			});
 	});
 var $elm$file$File$toString = _File_toString;
+var $elm$core$Debug$todo = _Debug_todo;
 var $author$project$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
@@ -8399,22 +8403,49 @@ var $author$project$Main$update = F2(
 				return _Utils_Tuple2(
 					A2($author$project$Main$cloneUs, ast, model),
 					$elm$core$Platform$Cmd$none);
-			case 'MsgDuplicate':
-				var ast = msg.a;
-				var newModel = A2($author$project$Main$cloneUs, ast, model);
-				return _Utils_Tuple2(newModel, $elm$core$Platform$Cmd$none);
 			case 'MsgNoOp':
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			case 'MsgStartDnD':
 				var rootXY = msg.a;
 				var mouseXY = msg.b;
+				var maybeAst = A2(
+					$elm$core$List$filter,
+					function (_v2) {
+						var xy = _v2.a;
+						return _Utils_eq(xy, rootXY);
+					},
+					model.getASTRoots);
+				var timerCmd = function () {
+					if (!maybeAst.b) {
+						return $elm$core$Platform$Cmd$none;
+					} else {
+						var ast = maybeAst.a;
+						return A2(
+							$elm$core$Task$perform,
+							$elm$core$Basics$always(
+								$author$project$Main$MsgTimerFinished(ast)),
+							$elm$core$Process$sleep(2000));
+					}
+				}();
 				return _Utils_Tuple2(
 					A3($author$project$Main$startDnD, rootXY, mouseXY, model),
+					timerCmd);
+			case 'MsgStartTimer':
+				return _Debug_todo(
+					'Main',
+					{
+						start: {line: 478, column: 13},
+						end: {line: 478, column: 23}
+					})('タイマーの処理を追加してください');
+			case 'MsgTimerFinished':
+				var ast = msg.a;
+				return _Utils_Tuple2(
+					A2($author$project$Main$cloneUs, ast, model),
 					$elm$core$Platform$Cmd$none);
 			case 'MsgLetMeRoot':
-				var _v1 = msg.a;
-				var rootXY = _v1.a;
-				var ast = _v1.b;
+				var _v3 = msg.a;
+				var rootXY = _v3.a;
+				var ast = _v3.b;
 				var mouseXY = msg.b;
 				return _Utils_Tuple2(
 					A3(
@@ -8432,9 +8463,9 @@ var $author$project$Main$update = F2(
 					A2($author$project$Main$moveUs, mouseXY, model),
 					$elm$core$Platform$Cmd$none);
 			case 'MsgAttachMe':
-				var _v2 = msg.a;
-				var rootXY = _v2.a;
-				var ast = _v2.b;
+				var _v4 = msg.a;
+				var rootXY = _v4.a;
+				var ast = _v4.b;
 				return _Utils_Tuple2(
 					A2(
 						$author$project$Main$attachMe,
@@ -8781,24 +8812,6 @@ var $author$project$Main$MsgStartDnD = F2(
 	});
 var $author$project$Main$ToBottom = {$: 'ToBottom'};
 var $author$project$Main$ToRight = {$: 'ToRight'};
-var $author$project$Main$MsgDuplicate = function (a) {
-	return {$: 'MsgDuplicate', a: a};
-};
-var $elm$core$Debug$log = _Debug_log;
-var $elm$json$Json$Decode$value = _Json_decodeValue;
-var $author$project$Main$decodeTouches = function (root) {
-	return A2(
-		$elm$json$Json$Decode$andThen,
-		function (touches) {
-			var _v0 = A2($elm$core$Debug$log, 'Touch points detected', touches);
-			return ($elm$core$List$length(touches) === 2) ? $elm$json$Json$Decode$succeed(
-				$author$project$Main$MsgDuplicate(root)) : $elm$json$Json$Decode$fail('Not a two-finger touch');
-		},
-		A2(
-			$elm$json$Json$Decode$field,
-			'changedTouches',
-			$elm$json$Json$Decode$list($elm$json$Json$Decode$value)));
-};
 var $elm$virtual_dom$VirtualDom$lazy3 = _VirtualDom_lazy3;
 var $elm$html$Html$Lazy$lazy3 = $elm$virtual_dom$VirtualDom$lazy3;
 var $elm$virtual_dom$VirtualDom$lazy4 = _VirtualDom_lazy4;
@@ -9902,9 +9915,10 @@ var $author$project$Main$viewASTRoot = F2(
 					$author$project$Main$preventDefaultOn,
 					'touchend',
 					A2(
-						$author$project$Main$whenNotDragging,
+						$author$project$Main$whenDragging,
 						model,
-						$author$project$Main$decodeTouches(root))),
+						$elm$json$Json$Decode$succeed(
+							$author$project$Main$MsgAttachMe(root)))),
 					A2(
 					$author$project$Main$on,
 					'mousedown',
@@ -10226,7 +10240,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('マーカス'),
+												$elm$html$Html$Attributes$placeholder('新しい関数名お'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(

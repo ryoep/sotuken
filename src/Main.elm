@@ -377,7 +377,8 @@ subscriptions model =
 
 type Msg
     = MsgCloneUs (ASTxy Node)
-    | MsgDuplicate (ASTxy Node) -- 複製用のメッセージを追加
+    | MsgStartTimer (ASTxy Node)
+    | MsgTimerFinished (ASTxy Node)
     | MsgNoOp
     | MsgLetMeRoot (ASTxy Node) Position
     | MsgMoveUs Position
@@ -455,21 +456,29 @@ proceed =
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
-        -- MsgCloneUs ast ->
-        --    Debug.log "MsgCloneUs received" ( cloneUs ast model, Cmd.none )
         MsgCloneUs ast ->
             ( cloneUs ast model, Cmd.none )
-        MsgDuplicate ast ->
-            -- 複製を実行
-            let
-                newModel = cloneUs ast model
-            in
-            (newModel, Cmd.none)
         MsgNoOp ->
             -- NoAction では何もせずそのまま model を返す
             (model, Cmd.none)
+        --MsgStartDnD rootXY mouseXY ->
+        --    ( startDnD rootXY mouseXY model, Cmd.none )
         MsgStartDnD rootXY mouseXY ->
-            ( startDnD rootXY mouseXY model, Cmd.none )
+            -- 位置(rootXY)に該当するASTxyを取得し、タイマーを開始する
+            let
+                maybeAst = List.filter (\(ASTxy xy _) -> xy == rootXY) model.getASTRoots
+                timerCmd =
+                    case maybeAst of
+                        [] -> Cmd.none  -- 該当するASTがない場合は何もしない
+                        (ast :: _) -> Process.sleep 2000 |> Task.perform (always (MsgTimerFinished ast))
+            in
+            (startDnD rootXY mouseXY model, timerCmd)
+        MsgStartTimer _ ->
+            -- TODO: 必要な処理をここに追加する
+            Debug.todo "タイマーの処理を追加してください"
+        MsgTimerFinished ast ->
+            -- タイマーが終了したら複製処理を実行
+            (cloneUs ast model, Cmd.none)
         MsgLetMeRoot (ASTxy rootXY ast) mouseXY ->
             ( model |> letMeRoot (ASTxy rootXY ast) |> startDnD rootXY mouseXY, Cmd.none )
         MsgMoveUs mouseXY ->
@@ -1911,7 +1920,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "マーカス" --新しい関数名
+                        , placeholder "新しい関数名お" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -1980,15 +1989,10 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
 
          --追加
          --touchend
-        --, preventDefaultOn "touchend"
-        --    <| whenDragging model
-        --        <| Decode.succeed
-        --            <| MsgAttachMe root
-
-        -- touchend イベントで複製を行う処理を追加
         , preventDefaultOn "touchend"
-            <| whenNotDragging model
-                <| decodeTouches root
+            <| whenDragging model
+                <| Decode.succeed
+                    <| MsgAttachMe root
 
 
 
@@ -2039,34 +2043,6 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
         , ( "R", lazy4 viewAST model ( x + interval model, y ) ToRight r )
         , ( "B", lazy4 viewAST model (x, y + interval model ) ToBottom b )
         ]
-
-
-decodeTouches : ASTxy Node -> Decode.Decoder Msg
-decodeTouches root =
-    Decode.field "changedTouches" (Decode.list Decode.value)
-        |> Decode.andThen
-            (\touches ->
-                let
-                    _ = Debug.log "Touch points detected" touches
-                in
-                if List.length touches == 2 then
-                    Decode.succeed (MsgDuplicate root)
-                else
-                    Decode.fail "Not a two-finger touch"
-            )
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
