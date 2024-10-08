@@ -189,6 +189,7 @@ type alias Model =
     { getBrickSize : Magnitude
     , getASTRoots : List (ASTxy Node)
     , getDnDInfo : DnDInfo
+    , touchCount : Int -- タッチの数を保存する
     , varNames : Set String
     , routineNames : Set String -- ルーチン名のセット
     , routineBox : String       -- ルーチン名を入力するボックス
@@ -358,6 +359,7 @@ init _ =
           , penState = Up
           , lines = []
           }
+        , touchCount = 0 -- ここに touchCount を追加し、初期値を 0 に設定
       }
     , Cmd.none
     )
@@ -378,6 +380,7 @@ subscriptions model =
 type Msg
     = MsgCloneUs (ASTxy Node)
     | MsgCloneTouch (ASTxy Node) --タッチの複製
+    | MsgUpdateTouchCount Int -- タッチの数を更新するメッセージ
     | MsgNoOp
     | MsgLetMeRoot (ASTxy Node) Position
     | MsgMoveUs Position
@@ -459,6 +462,8 @@ update msg model =
             ( cloneUs ast model, Cmd.none )
         MsgCloneTouch ast ->
             ( cloneUs ast model, Cmd.none )
+        MsgUpdateTouchCount touchCount ->
+            ({ model | touchCount = touchCount }, Cmd.none)
         MsgNoOp ->
             -- NoAction では何もせずそのまま model を返す
             (model, Cmd.none)
@@ -1905,7 +1910,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "マグワイア" --新しい関数名
+                        , placeholder "150" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -1980,18 +1985,13 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
         --            <| MsgAttachMe root
 
         , preventDefaultOn "touchend"
-              <| whenDragging model
-                  (Decode.field "changedTouches" (Decode.list Decode.value)
-                  |> Decode.andThen
-                      (\touches ->
-                          if List.length touches == 2 then
-                              Decode.succeed (MsgCloneTouch root) -- 二本指なら複製メッセージを送信
-                          else if List.length touches == 1 then
-                              Decode.succeed (MsgAttachMe root) -- 通常の処理
-                          else
-                              Decode.succeed MsgNoOp -- 何もせずに終了
-                      )
-                  )
+            <| Decode.succeed
+                (if model.touchCount == 2 then
+                    MsgCloneTouch root -- 二本指タッチなら複製
+                else
+                    MsgAttachMe root -- それ以外は通常のアタッチ
+                )
+
 
                  
 
@@ -2006,12 +2006,17 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                              (Decode.field "pageX" Decode.float)
                              (Decode.field "pageY" Decode.float)
 
+        --, on "touchstart"
+        --    <| whenNotDragging model
+        --        <| Decode.map2
+        --            (\clientX clientY -> MsgStartDnD (x, y) (clientX, clientY))
+        --            (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
+        --            (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
+
         , on "touchstart"
-            <| whenNotDragging model
-                <| Decode.map2
-                    (\clientX clientY -> MsgStartDnD (x, y) (clientX, clientY))
-                    (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
-                    (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
+            <| Decode.map (\touches -> MsgUpdateTouchCount (List.length touches))
+                (Decode.field "changedTouches" (Decode.list Decode.value))
+
 
 
         -- contextmenu

@@ -5423,6 +5423,7 @@ var $author$project$Main$init = function (_v0) {
 			routineNames: $elm$core$Set$fromList(
 				_List_fromArray(
 					['usagi', 'kuma'])),
+			touchCount: 0,
 			turtle: {avelocity: 0, callStack: _List_Nil, current: $author$project$Main$Nil, forward_remaining: 0, heading: 270, initHeading: 270, initX: 150, initY: 150, lines: _List_Nil, penState: $author$project$Main$Up, stack: _List_Nil, state: $author$project$Main$Done, turn_remaining: 0, variables: $elm$core$Dict$empty, velocity: 0, w: 32, wait_remaining: 0, x: 150, y: 150},
 			varNames: $elm$core$Set$empty
 		},
@@ -8404,6 +8405,13 @@ var $author$project$Main$update = F2(
 				return _Utils_Tuple2(
 					A2($author$project$Main$cloneUs, ast, model),
 					$elm$core$Platform$Cmd$none);
+			case 'MsgUpdateTouchCount':
+				var touchCount = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{touchCount: touchCount}),
+					$elm$core$Platform$Cmd$none);
 			case 'MsgNoOp':
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			case 'MsgStartDnD':
@@ -8779,11 +8787,13 @@ var $author$project$Main$MsgCloneUs = function (a) {
 	return {$: 'MsgCloneUs', a: a};
 };
 var $author$project$Main$MsgDblClick = {$: 'MsgDblClick'};
-var $author$project$Main$MsgNoOp = {$: 'MsgNoOp'};
 var $author$project$Main$MsgStartDnD = F2(
 	function (a, b) {
 		return {$: 'MsgStartDnD', a: a, b: b};
 	});
+var $author$project$Main$MsgUpdateTouchCount = function (a) {
+	return {$: 'MsgUpdateTouchCount', a: a};
+};
 var $author$project$Main$ToBottom = {$: 'ToBottom'};
 var $author$project$Main$ToRight = {$: 'ToRight'};
 var $elm$json$Json$Decode$value = _Json_decodeValue;
@@ -9901,20 +9911,8 @@ var $author$project$Main$viewASTRoot = F2(
 					A2(
 					$author$project$Main$preventDefaultOn,
 					'touchend',
-					A2(
-						$author$project$Main$whenDragging,
-						model,
-						A2(
-							$elm$json$Json$Decode$andThen,
-							function (touches) {
-								return ($elm$core$List$length(touches) === 2) ? $elm$json$Json$Decode$succeed(
-									$author$project$Main$MsgCloneTouch(root)) : (($elm$core$List$length(touches) === 1) ? $elm$json$Json$Decode$succeed(
-									$author$project$Main$MsgAttachMe(root)) : $elm$json$Json$Decode$succeed($author$project$Main$MsgNoOp));
-							},
-							A2(
-								$elm$json$Json$Decode$field,
-								'changedTouches',
-								$elm$json$Json$Decode$list($elm$json$Json$Decode$value))))),
+					$elm$json$Json$Decode$succeed(
+						(model.touchCount === 2) ? $author$project$Main$MsgCloneTouch(root) : $author$project$Main$MsgAttachMe(root))),
 					A2(
 					$author$project$Main$on,
 					'mousedown',
@@ -9937,27 +9935,15 @@ var $author$project$Main$viewASTRoot = F2(
 					$author$project$Main$on,
 					'touchstart',
 					A2(
-						$author$project$Main$whenNotDragging,
-						model,
-						A3(
-							$elm$json$Json$Decode$map2,
-							F2(
-								function (clientX, clientY) {
-									return A2(
-										$author$project$Main$MsgStartDnD,
-										_Utils_Tuple2(x, y),
-										_Utils_Tuple2(clientX, clientY));
-								}),
-							A2(
-								$elm$json$Json$Decode$at,
-								_List_fromArray(
-									['changedTouches', '0', 'clientX']),
-								$elm$json$Json$Decode$float),
-							A2(
-								$elm$json$Json$Decode$at,
-								_List_fromArray(
-									['changedTouches', '0', 'clientY']),
-								$elm$json$Json$Decode$float)))),
+						$elm$json$Json$Decode$map,
+						function (touches) {
+							return $author$project$Main$MsgUpdateTouchCount(
+								$elm$core$List$length(touches));
+						},
+						A2(
+							$elm$json$Json$Decode$field,
+							'changedTouches',
+							$elm$json$Json$Decode$list($elm$json$Json$Decode$value)))),
 					A2(
 					$author$project$Main$preventDefaultOn,
 					'contextmenu',
@@ -10240,7 +10226,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('マグワイア'),
+												$elm$html$Html$Attributes$placeholder('150'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(
