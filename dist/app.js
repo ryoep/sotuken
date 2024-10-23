@@ -8782,33 +8782,16 @@ var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('
 var $author$project$Main$MsgAttachMe = function (a) {
 	return {$: 'MsgAttachMe', a: a};
 };
-var $author$project$Main$MsgCloneTouch = function (a) {
-	return {$: 'MsgCloneTouch', a: a};
-};
 var $author$project$Main$MsgCloneUs = function (a) {
 	return {$: 'MsgCloneUs', a: a};
 };
 var $author$project$Main$MsgDblClick = {$: 'MsgDblClick'};
-var $author$project$Main$MsgNoOp = {$: 'MsgNoOp'};
 var $author$project$Main$MsgStartDnD = F2(
 	function (a, b) {
 		return {$: 'MsgStartDnD', a: a, b: b};
 	});
 var $author$project$Main$ToBottom = {$: 'ToBottom'};
 var $author$project$Main$ToRight = {$: 'ToRight'};
-var $elm$json$Json$Decode$value = _Json_decodeValue;
-var $author$project$Main$decodeTouches = function (astxy) {
-	return A2(
-		$elm$json$Json$Decode$andThen,
-		function (touches) {
-			return ($elm$core$List$length(touches) === 2) ? $elm$json$Json$Decode$succeed(
-				$author$project$Main$MsgCloneTouch(astxy)) : $elm$json$Json$Decode$fail('Not a two-finger touch');
-		},
-		A2(
-			$elm$json$Json$Decode$field,
-			'changedTouches',
-			$elm$json$Json$Decode$list($elm$json$Json$Decode$value)));
-};
 var $elm$virtual_dom$VirtualDom$lazy3 = _VirtualDom_lazy3;
 var $elm$html$Html$Lazy$lazy3 = $elm$virtual_dom$VirtualDom$lazy3;
 var $elm$virtual_dom$VirtualDom$lazy4 = _VirtualDom_lazy4;
@@ -9911,8 +9894,11 @@ var $author$project$Main$viewASTRoot = F2(
 					A2(
 					$author$project$Main$preventDefaultOn,
 					'touchend',
-					$elm$json$Json$Decode$succeed(
-						(model.touchCount === 2) ? $author$project$Main$MsgCloneTouch(root) : $author$project$Main$MsgAttachMe(root))),
+					A2(
+						$author$project$Main$whenDragging,
+						model,
+						$elm$json$Json$Decode$succeed(
+							$author$project$Main$MsgAttachMe(root)))),
 					A2(
 					$author$project$Main$on,
 					'mousedown',
@@ -9935,19 +9921,27 @@ var $author$project$Main$viewASTRoot = F2(
 					$author$project$Main$on,
 					'touchstart',
 					A2(
-						$elm$json$Json$Decode$map,
-						function (touches) {
-							return A2(
-								$elm$core$Debug$log,
-								'Touches length: ' + $elm$core$String$fromInt(
-									$elm$core$List$length(touches)),
-								$author$project$Main$MsgNoOp);
-						},
-						A2(
-							$elm$json$Json$Decode$field,
-							'changedTouches',
-							$elm$json$Json$Decode$list(
-								A2($elm$json$Json$Decode$field, 'clientX', $elm$json$Json$Decode$float))))),
+						$author$project$Main$whenNotDragging,
+						model,
+						A3(
+							$elm$json$Json$Decode$map2,
+							F2(
+								function (clientX, clientY) {
+									return A2(
+										$author$project$Main$MsgStartDnD,
+										_Utils_Tuple2(x, y),
+										_Utils_Tuple2(clientX, clientY));
+								}),
+							A2(
+								$elm$json$Json$Decode$at,
+								_List_fromArray(
+									['changedTouches', '0', 'clientX']),
+								$elm$json$Json$Decode$float),
+							A2(
+								$elm$json$Json$Decode$at,
+								_List_fromArray(
+									['changedTouches', '0', 'clientY']),
+								$elm$json$Json$Decode$float)))),
 					A2(
 					$author$project$Main$preventDefaultOn,
 					'contextmenu',
@@ -9965,11 +9959,7 @@ var $author$project$Main$viewASTRoot = F2(
 					$author$project$Main$on,
 					'dblclick',
 					$author$project$Main$whenLeftButtonIsDown(
-						$elm$json$Json$Decode$succeed($author$project$Main$MsgDblClick))),
-					A2(
-					$author$project$Main$preventDefaultOn,
-					'touchend',
-					$author$project$Main$decodeTouches(root))
+						$elm$json$Json$Decode$succeed($author$project$Main$MsgDblClick)))
 				]),
 			_List_fromArray(
 				[
@@ -10230,7 +10220,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('マーカス'),
+												$elm$html$Html$Attributes$placeholder('新しい関数名'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(
