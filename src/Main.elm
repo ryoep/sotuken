@@ -1913,7 +1913,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "マーカス" --新しい関数名
+                        , placeholder "新しい関数名" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -1982,21 +1982,10 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
 
          --追加
          --touchend
-        --, preventDefaultOn "touchend"
-        --    <| whenDragging model
-        --        <| Decode.succeed
-        --            <| MsgAttachMe root
-
         , preventDefaultOn "touchend"
-            <| Decode.succeed
-                (if model.touchCount == 2 then
-                    MsgCloneTouch root -- 二本指タッチなら複製
-                else
-                    MsgAttachMe root -- それ以外は通常のアタッチ
-                )
-
-
-                 
+            <| whenDragging model
+                <| Decode.succeed
+                    <| MsgAttachMe root       
 
 
         -- mousedown
@@ -2009,28 +1998,18 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                              (Decode.field "pageX" Decode.float)
                              (Decode.field "pageY" Decode.float)
 
-        --, on "touchstart"
-        --    <| whenNotDragging model
-        --        <| Decode.map2
-        --            (\clientX clientY -> MsgStartDnD (x, y) (clientX, clientY))
-        --            (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
-        --            (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
+        , on "touchstart"
+            <| whenNotDragging model
+                <| Decode.map2
+                    (\clientX clientY -> MsgStartDnD (x, y) (clientX, clientY))
+                    (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
+                    (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
 
         --, on "touchstart"
         --    <| Decode.map (\firstTouch ->
         --        Debug.log ("First touch X: " ++ String.fromFloat firstTouch) MsgNoOp
         --    )
         --    (Decode.at [ "changedTouches", "0", "clientX" ] Decode.float)
-
-        , on "touchstart"
-            <| Decode.map (\touches -> 
-                Debug.log ("Touches length: " ++ String.fromInt (List.length touches)) MsgNoOp
-            )
-            (Decode.field "changedTouches" (Decode.list (Decode.field "clientX" Decode.float)))
-
-
-
-
 
 
 
@@ -2045,9 +2024,6 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
         , on "dblclick"
               <| whenLeftButtonIsDown
                   <| Decode.succeed MsgDblClick
-
-        , preventDefaultOn "touchend"
-              <| decodeTouches root  -- 修正した関数にASTxy Nodeを渡す
 
 
 
