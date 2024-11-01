@@ -6094,6 +6094,15 @@ var $author$project$Main$getVarNames = function (model) {
 			varNames: $elm$core$Set$fromList(varList)
 		});
 };
+var $elm$core$List$head = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(x);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
 var $author$project$Main$letMeRoot = F2(
 	function (newRoot, model) {
 		var newRootXY = newRoot.a;
@@ -6559,7 +6568,6 @@ var $author$project$Main$loadProgram = F2(
 			return model;
 		}
 	});
-var $elm$core$Debug$log = _Debug_log;
 var $author$project$Main$makeNewRoutine = function (model) {
 	var newEntryBrick = {
 		getBrickCommand: $author$project$Main$CommandNOP,
@@ -7354,15 +7362,6 @@ var $author$project$Main$getRoutine = F2(
 			}
 		}
 	});
-var $elm$core$List$head = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(x);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
 var $author$project$Main$next = F2(
 	function (roots, turtle) {
 		next:
@@ -8401,19 +8400,24 @@ var $author$project$Main$update = F2(
 				return _Utils_Tuple2(
 					A2($author$project$Main$cloneUs, ast, model),
 					$elm$core$Platform$Cmd$none);
-			case 'MsgCloneTouch':
-				var ast = msg.a;
-				return _Utils_Tuple2(
-					A2($author$project$Main$cloneUs, ast, model),
-					$elm$core$Platform$Cmd$none);
-			case 'MsgUpdateTouchCount':
-				var touchCount = msg.a;
-				var _v1 = A2($elm$core$Debug$log, 'Touch count: ', touchCount);
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{touchCount: touchCount}),
-					$elm$core$Platform$Cmd$none);
+			case 'MsgTouchUpdate':
+				var count = msg.a;
+				var modelWithUpdatedTouchCount = _Utils_update(
+					model,
+					{touchCount: count});
+				if (count === 2) {
+					var _v1 = $elm$core$List$head(model.getASTRoots);
+					if (_v1.$ === 'Just') {
+						var ast = _v1.a;
+						return _Utils_Tuple2(
+							A2($author$project$Main$cloneUs, ast, modelWithUpdatedTouchCount),
+							$elm$core$Platform$Cmd$none);
+					} else {
+						return _Utils_Tuple2(modelWithUpdatedTouchCount, $elm$core$Platform$Cmd$none);
+					}
+				} else {
+					return _Utils_Tuple2(modelWithUpdatedTouchCount, $elm$core$Platform$Cmd$none);
+				}
 			case 'MsgNoOp':
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			case 'MsgStartDnD':
@@ -8790,12 +8794,16 @@ var $author$project$Main$MsgStartDnD = F2(
 	function (a, b) {
 		return {$: 'MsgStartDnD', a: a, b: b};
 	});
+var $author$project$Main$MsgTouchUpdate = function (a) {
+	return {$: 'MsgTouchUpdate', a: a};
+};
 var $author$project$Main$ToBottom = {$: 'ToBottom'};
 var $author$project$Main$ToRight = {$: 'ToRight'};
 var $elm$virtual_dom$VirtualDom$lazy3 = _VirtualDom_lazy3;
 var $elm$html$Html$Lazy$lazy3 = $elm$virtual_dom$VirtualDom$lazy3;
 var $elm$virtual_dom$VirtualDom$lazy4 = _VirtualDom_lazy4;
 var $elm$html$Html$Lazy$lazy4 = $elm$virtual_dom$VirtualDom$lazy4;
+var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $author$project$Main$MsgLetMeRoot = F2(
 	function (a, b) {
 		return {$: 'MsgLetMeRoot', a: a, b: b};
@@ -9893,12 +9901,30 @@ var $author$project$Main$viewASTRoot = F2(
 								$author$project$Main$MsgAttachMe(root))))),
 					A2(
 					$author$project$Main$preventDefaultOn,
+					'touchstart',
+					A2(
+						$elm$json$Json$Decode$map,
+						$author$project$Main$MsgTouchUpdate,
+						A2(
+							$elm$json$Json$Decode$map,
+							$elm$core$List$length,
+							A2(
+								$elm$json$Json$Decode$field,
+								'touches',
+								$elm$json$Json$Decode$list($elm$json$Json$Decode$value))))),
+					A2(
+					$author$project$Main$preventDefaultOn,
 					'touchend',
 					A2(
-						$author$project$Main$whenDragging,
-						model,
-						$elm$json$Json$Decode$succeed(
-							$author$project$Main$MsgAttachMe(root)))),
+						$elm$json$Json$Decode$map,
+						$author$project$Main$MsgTouchUpdate,
+						A2(
+							$elm$json$Json$Decode$map,
+							$elm$core$List$length,
+							A2(
+								$elm$json$Json$Decode$field,
+								'touches',
+								$elm$json$Json$Decode$list($elm$json$Json$Decode$value))))),
 					A2(
 					$author$project$Main$on,
 					'mousedown',
@@ -9917,31 +9943,6 @@ var $author$project$Main$viewASTRoot = F2(
 									}),
 								A2($elm$json$Json$Decode$field, 'pageX', $elm$json$Json$Decode$float),
 								A2($elm$json$Json$Decode$field, 'pageY', $elm$json$Json$Decode$float))))),
-					A2(
-					$author$project$Main$on,
-					'touchstart',
-					A2(
-						$author$project$Main$whenNotDragging,
-						model,
-						A3(
-							$elm$json$Json$Decode$map2,
-							F2(
-								function (clientX, clientY) {
-									return A2(
-										$author$project$Main$MsgStartDnD,
-										_Utils_Tuple2(x, y),
-										_Utils_Tuple2(clientX, clientY));
-								}),
-							A2(
-								$elm$json$Json$Decode$at,
-								_List_fromArray(
-									['changedTouches', '0', 'clientX']),
-								$elm$json$Json$Decode$float),
-							A2(
-								$elm$json$Json$Decode$at,
-								_List_fromArray(
-									['changedTouches', '0', 'clientY']),
-								$elm$json$Json$Decode$float)))),
 					A2(
 					$author$project$Main$preventDefaultOn,
 					'contextmenu',

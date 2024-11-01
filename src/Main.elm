@@ -333,6 +333,7 @@ init _ =
           , getRootXY = ( 0, 0 )
           }
       , varNames = Set.empty
+      , touchCount = 0 -- touchCountを0に初期化
       , routineNames = Set.fromList ["usagi", "kuma"]
       , routineBox   = ""
       , initXBox = "150"
@@ -359,7 +360,6 @@ init _ =
           , penState = Up
           , lines = []
           }
-        , touchCount = 0 -- ここに touchCount を追加し、初期値を 0 に設定
       }
     , Cmd.none
     )
@@ -379,8 +379,7 @@ subscriptions model =
 
 type Msg
     = MsgCloneUs (ASTxy Node)
-    | MsgCloneTouch (ASTxy Node) --タッチの複製
-    | MsgUpdateTouchCount Int -- タッチの数を更新するメッセージ
+    | MsgTouchUpdate Int -- 追加: タッチ数を更新するメッセージ
     | MsgNoOp
     | MsgLetMeRoot (ASTxy Node) Position
     | MsgMoveUs Position
@@ -460,13 +459,16 @@ update msg model =
     case msg of
         MsgCloneUs ast ->
             ( cloneUs ast model, Cmd.none )
-        MsgCloneTouch ast ->
-            ( cloneUs ast model, Cmd.none )
-        MsgUpdateTouchCount touchCount ->
+        MsgTouchUpdate count ->
             let
-                _ = Debug.log "Touch count: " touchCount
+                modelWithUpdatedTouchCount = { model | touchCount = count }
             in
-            ({ model | touchCount = touchCount }, Cmd.none)
+            if count == 2 then
+                case List.head model.getASTRoots of -- 例: 最初のブロックを複製
+                    Just ast -> (cloneUs ast modelWithUpdatedTouchCount, Cmd.none)
+                    Nothing -> (modelWithUpdatedTouchCount, Cmd.none)
+            else
+                (modelWithUpdatedTouchCount, Cmd.none)
         MsgNoOp ->
             -- NoAction では何もせずそのまま model を返す
             (model, Cmd.none)
@@ -1982,10 +1984,17 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
 
          --追加
          --touchend
+        --, preventDefaultOn "touchend"
+          --  <| whenDragging model
+            --    <| Decode.succeed
+              --      <| MsgAttachMe root 
+
+        , preventDefaultOn "touchstart"
+            <| Decode.map MsgTouchUpdate
+                (Decode.field "touches" (Decode.list Decode.value) |> Decode.map List.length)
         , preventDefaultOn "touchend"
-            <| whenDragging model
-                <| Decode.succeed
-                    <| MsgAttachMe root       
+            <| Decode.map MsgTouchUpdate
+                (Decode.field "touches" (Decode.list Decode.value) |> Decode.map List.length)   
 
 
         -- mousedown
@@ -1998,18 +2007,13 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                              (Decode.field "pageX" Decode.float)
                              (Decode.field "pageY" Decode.float)
 
-        , on "touchstart"
-            <| whenNotDragging model
-                <| Decode.map2
-                    (\clientX clientY -> MsgStartDnD (x, y) (clientX, clientY))
-                    (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
-                    (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
-
         --, on "touchstart"
-        --    <| Decode.map (\firstTouch ->
-        --        Debug.log ("First touch X: " ++ String.fromFloat firstTouch) MsgNoOp
-        --    )
-        --    (Decode.at [ "changedTouches", "0", "clientX" ] Decode.float)
+          --  <| whenNotDragging model
+            --    <| Decode.map2
+              --      (\clientX clientY -> MsgStartDnD (x, y) (clientX, clientY))
+                --    (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
+                  --  (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
+
 
 
 
@@ -2034,17 +2038,6 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
         , ( "R", lazy4 viewAST model ( x + interval model, y ) ToRight r )
         , ( "B", lazy4 viewAST model (x, y + interval model ) ToBottom b )
         ]
-
-decodeTouches : ASTxy Node -> Decode.Decoder Msg
-decodeTouches astxy =
-    Decode.field "changedTouches" (Decode.list Decode.value)
-        |> Decode.andThen
-            (\touches ->
-                if List.length touches == 2 then
-                    Decode.succeed (MsgCloneTouch astxy) -- 二本指なら複製メッセージを送信
-                else
-                    Decode.fail "Not a two-finger touch"
-            )
 
 
 
