@@ -23,7 +23,6 @@ import Process exposing (..)
 import File exposing (File)
 import File.Download as Download
 import File.Select as Select
-import Debug exposing (log)
 
 main : Program () Model Msg
 main =
@@ -382,6 +381,9 @@ type Msg
     | MsgMoveUs Position
     | MsgAttachMe (ASTxy Node)
     | MsgStartDnD Position Position
+    | MsgLongPressStart (ASTxy Node)
+    | MsgLongPressEnd
+    | MsgLongPressTimeout (ASTxy Node)
     | MsgInputChanged Position Int String
     | MsgCheckString  Position Int String
     | MsgSetVarNames -- 全ての変数名を取得
@@ -464,6 +466,12 @@ update msg model =
             ( moveUs mouseXY model, Cmd.none )
         MsgAttachMe (ASTxy rootXY ast) ->
             ( model |> stopDnD rootXY |> attachMe (ASTxy rootXY ast), Cmd.none )
+        MsgLongPressStart ast ->
+            (model, Process.sleep 500 |> Task.perform (always (MsgLongPressTimeout ast))) -- タイマー設定
+        MsgLongPressTimeout ast ->
+            (cloneUs ast model, Cmd.none) -- タイマー完了後に複製
+        MsgLongPressEnd ->
+            (model, Cmd.none) -- タイマーをリセットするための処理
         MsgInputChanged xy place text ->
             ( modifyText modifyTextData   xy place text model, Cmd.none )
         MsgCheckString xy place text ->
@@ -1898,7 +1906,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "marcus" --新しい関数名
+                        , placeholder "マーカス" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -1967,10 +1975,10 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
 
         -- 追加
         -- touchend
-        , preventDefaultOn "touchend"
-            <| whenDragging model
-                <| Decode.succeed
-                    <| MsgAttachMe root
+      --  , preventDefaultOn "touchend"
+        --    <| whenDragging model
+          --      <| Decode.succeed
+            --        <| MsgAttachMe root
 
 
         -- mousedown
@@ -1994,32 +2002,12 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
 
         --とりあえずブロックにタッチしたら複製できる
                 -- タッチイベントで複製をトリガー
-                --, on "touchstart"
-                  --  <| whenNotDragging model
-                    --    <| Decode.succeed (MsgCloneUs root)
+               -- , on "touchstart"
+                 --   <| whenNotDragging model
+                   --     <| Decode.succeed (MsgCloneUs root)
 
-        , on "touchstart"
-            <| whenNotDragging model
-                <| Decode.map3
-                    (\touchList clientX clientY -> 
-                        let 
-                            touches = List.length touchList
-                            _ = Debug.log "Touch count" touches
-                        in
-                        if touches == 1 then 
-                            MsgStartDnD (x, y) (clientX, clientY) -- 一本指ならドラッグ開始
-                        else if touches == 2 then 
-                            MsgCloneUs root     -- 二本指なら複製
-                        else 
-                            MsgNOP -- それ以外は何もしない
-                    )
-                    (Decode.field "changedTouches" (Decode.list Decode.value))
-                    (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
-                    (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
-
-
-
-
+        , on "touchstart" (Decode.succeed (MsgLongPressStart root))
+        , on "touchend" (Decode.succeed MsgLongPressEnd)
 
 
         -- contextmenu
