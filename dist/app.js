@@ -13146,7 +13146,6 @@ var $author$project$Main$MsgStartDnD = F2(
 	});
 var $author$project$Main$ToBottom = {$: 'ToBottom'};
 var $author$project$Main$ToRight = {$: 'ToRight'};
-var $elm$json$Json$Decode$int = _Json_decodeInt;
 var $elm$virtual_dom$VirtualDom$lazy4 = _VirtualDom_lazy4;
 var $elm$html$Html$Lazy$lazy4 = $elm$virtual_dom$VirtualDom$lazy4;
 var $author$project$Main$MsgLetMeRoot = F2(
@@ -14048,6 +14047,7 @@ var $author$project$Main$viewBrick = F3(
 				}()
 				]));
 	});
+var $elm$json$Json$Decode$int = _Json_decodeInt;
 var $elm_community$json_extra$Json$Decode$Extra$when = F3(
 	function (checkDecoder, check, passDecoder) {
 		return A2(
@@ -14292,19 +14292,15 @@ var $author$project$Main$viewASTRoot = F2(
 					$author$project$Main$on,
 					'touchstart',
 					A2(
-						$author$project$Main$whenNotDragging,
-						model,
+						$elm$json$Json$Decode$andThen,
+						function (touches) {
+							return ($elm$core$List$length(touches) === 2) ? $elm$json$Json$Decode$succeed(
+								$author$project$Main$MsgCloneUs(root)) : $elm$json$Json$Decode$succeed($author$project$Main$MsgNoOp);
+						},
 						A2(
-							$elm$json$Json$Decode$andThen,
-							function (touches) {
-								return ($elm$core$List$length(touches) === 1) ? $elm$json$Json$Decode$succeed(
-									$author$project$Main$MsgCloneUs(root)) : $elm$json$Json$Decode$succeed($author$project$Main$MsgNoOp);
-							},
-							A2(
-								$elm$json$Json$Decode$field,
-								'changedTouches',
-								$elm$json$Json$Decode$list(
-									A2($elm$json$Json$Decode$field, 'identifier', $elm$json$Json$Decode$int)))))),
+							$elm$json$Json$Decode$field,
+							'changedTouches',
+							$elm$json$Json$Decode$list($elm$json$Json$Decode$value)))),
 					A2(
 					$author$project$Main$preventDefaultOn,
 					'contextmenu',
@@ -14583,7 +14579,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('あもりむ'),
+												$elm$html$Html$Attributes$placeholder('ユース'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(

@@ -1910,7 +1910,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "あもりむ" --新しい関数名
+                        , placeholder "ユース" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -2039,15 +2039,17 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
 
 
         , on "touchstart"
-            <| whenNotDragging model
-                <| Decode.andThen
+            (Decode.field "changedTouches" (Decode.list Decode.value)
+                |> Decode.andThen
                     (\touches ->
-                        if List.length touches == 1 then
+                        if List.length touches == 2 then
                             Decode.succeed (MsgCloneUs root)
                         else
                             Decode.succeed MsgNoOp
                     )
-            (Decode.field "changedTouches" (Decode.list (Decode.field "identifier" Decode.int)))
+            )
+
+
 
 
 
