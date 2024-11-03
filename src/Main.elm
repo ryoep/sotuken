@@ -1915,7 +1915,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "あもりむ" --新しい関数名
+                        , placeholder "新しい関数名" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -2007,10 +2007,10 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
 
          --追加
          --touchend
-        --, preventDefaultOn "touchend"
-          --  <| whenDragging model
-            --    <| Decode.succeed
-              --      <| MsgAttachMe root 
+        , preventDefaultOn "touchend"
+            <| whenDragging model
+                <| Decode.succeed
+                    <| MsgAttachMe root 
 
         --, on "touchend"
           --  (Decode.map2
@@ -2019,14 +2019,6 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                 --(Decode.at ["changedTouches", "0", "clientY"] Decode.float)
             --)
 
-        , on "touchend"
-            (Decode.succeed
-                (if model.touchCount == 2 then
-                    MsgCloneUs root
-                else
-                    MsgNoOp
-                )
-            )
 
 
 
@@ -2049,16 +2041,23 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
 
 --とりあえずブロックにタッチしたら複製できる
         -- タッチイベントで複製をトリガー
-        --, on "touchstart"
-          --    <| whenNotDragging model
-            --      <| Decode.succeed (MsgCloneUs root)
-
-
         , on "touchstart"
-            (Decode.field "changedTouches" (Decode.list Decode.value)
-                |> Decode.map List.length
-                |> Decode.map MsgStartTouch
-            )
+              <| whenNotDragging model
+                  <| Decode.succeed (MsgCloneUs root)
+
+
+        --on "touchstart"
+          --  (Decode.field "touches" (Decode.list Decode.value)
+            --    |> Decode.andThen
+              --      (\touches ->
+                --        if List.length touches == 2 then
+                  --          Decode.succeed (MsgCloneUs root)
+                    --    else
+                      --      Decode.succeed MsgNoOp
+                    --)
+            --)
+
+
 
 
 
