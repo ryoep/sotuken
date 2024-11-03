@@ -23,6 +23,11 @@ import Process exposing (..)
 import File exposing (File)
 import File.Download as Download
 import File.Select as Select
+import Tuple exposing (first, second)
+
+
+
+
 
 main : Program () Model Msg
 main =
@@ -189,7 +194,6 @@ type alias Model =
     { getBrickSize : Magnitude
     , getASTRoots : List (ASTxy Node)
     , getDnDInfo : DnDInfo
-    , touchCount : Int -- タッチの数を保存する
     , varNames : Set String
     , routineNames : Set String -- ルーチン名のセット
     , routineBox : String       -- ルーチン名を入力するボックス
@@ -333,7 +337,6 @@ init _ =
           , getRootXY = ( 0, 0 )
           }
       , varNames = Set.empty
-      , touchCount = 0 -- touchCountを0に初期化
       , routineNames = Set.fromList ["usagi", "kuma"]
       , routineBox   = ""
       , initXBox = "150"
@@ -379,7 +382,7 @@ subscriptions model =
 
 type Msg
     = MsgCloneUs (ASTxy Node)
-    | MsgTouchUpdate Int -- 追加: タッチ数を更新するメッセージ
+    | MsgCloneTouch Position
     | MsgNoOp
     | MsgLetMeRoot (ASTxy Node) Position
     | MsgMoveUs Position
@@ -459,16 +462,8 @@ update msg model =
     case msg of
         MsgCloneUs ast ->
             ( cloneUs ast model, Cmd.none )
-        MsgTouchUpdate count ->
-            let
-                modelWithUpdatedTouchCount = { model | touchCount = count }
-            in
-            if count == 2 then
-                case List.head model.getASTRoots of -- 例: 最初のブロックを複製
-                    Just ast -> (cloneUs ast modelWithUpdatedTouchCount, Cmd.none)
-                    Nothing -> (modelWithUpdatedTouchCount, Cmd.none)
-            else
-                (modelWithUpdatedTouchCount, Cmd.none)
+        MsgCloneTouch pos ->
+            ( cloneTouchBlock pos model, Cmd.none )
         MsgNoOp ->
             -- NoAction では何もせずそのまま model を返す
             (model, Cmd.none)
@@ -1915,7 +1910,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "みねるば" --新しい関数名
+                        , placeholder "マーカス" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -1968,6 +1963,29 @@ view model =
         ]
 
 
+-- 二本指タッチでの複製を処理する関数
+cloneTouchBlock : Position -> Model -> Model
+cloneTouchBlock pos model =
+    let
+        newModel = { model | getASTRoots = List.map (cloneIfTouched pos) model.getASTRoots }
+    in
+    newModel
+
+
+
+cloneIfTouched : Position -> ASTxy Node -> ASTxy Node
+cloneIfTouched touchPos (ASTxy pos ast) =
+    if isTouching pos touchPos then
+        let clonedAST = ASTxy (first pos + 10, second pos + 10) ast
+        in clonedAST
+    else
+        ASTxy pos ast
+
+
+isTouching : Position -> Position -> Bool
+isTouching (x1, y1) (x2, y2) =
+    abs (x1 - x2) < 20 && abs (y1 - y2) < 20
+
 -- 根のブロックの描画
 viewASTRoot : Model -> ASTxy Node -> Html Msg
 viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
@@ -1989,13 +2007,12 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
             --    <| Decode.succeed
               --      <| MsgAttachMe root 
 
-        , preventDefaultOn "touchstart"
-            <| Decode.map MsgTouchUpdate
-                (Decode.field "touches" (Decode.list Decode.value) |> Decode.map List.length)
-        , preventDefaultOn "touchend"
-            <| Decode.map MsgTouchUpdate
-                (Decode.field "touches" (Decode.list Decode.value) |> Decode.map List.length)   
-
+        , on "touchend"
+            (Decode.map2
+                (\clientX clientY -> MsgCloneTouch (clientX, clientY))
+                (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
+                (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
+            )
 
         -- mousedown
         , on "mousedown"
@@ -2014,6 +2031,12 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                 --    (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
                   --  (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
 
+        , on "touchstart"
+            (Decode.map2
+                (\clientX clientY -> MsgStartDnD (clientX, clientY) (clientX, clientY))
+                (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
+                (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
+            )
 
 
 
