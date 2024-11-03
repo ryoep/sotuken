@@ -1910,7 +1910,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "新しい関数名" --新しい関数名
+                        , placeholder "まんゆー" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -2043,17 +2043,12 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                 <| Decode.andThen
                     (\touches ->
                         if List.length touches == 2 then
-                            Decode.map2
-                                (\clientX clientY -> 
-                                    case root of
-                                        ASTxy _ astne -> MsgCloneUs (ASTxy (clientX, clientY) astne)
-                                )
-                                (Decode.at ["changedTouches", "1", "clientX"] Decode.float)
-                                (Decode.at ["changedTouches", "1", "clientY"] Decode.float)
+                            Decode.succeed (MsgCloneUs root)
                         else
                             Decode.succeed MsgNoOp
                     )
                     (Decode.field "changedTouches" (Decode.list Decode.value))
+
 
 
 

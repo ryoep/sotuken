@@ -14297,27 +14297,8 @@ var $author$project$Main$viewASTRoot = F2(
 						A2(
 							$elm$json$Json$Decode$andThen,
 							function (touches) {
-								return ($elm$core$List$length(touches) === 2) ? A3(
-									$elm$json$Json$Decode$map2,
-									F2(
-										function (clientX, clientY) {
-											var astne = root.b;
-											return $author$project$Main$MsgCloneUs(
-												A2(
-													$author$project$Main$ASTxy,
-													_Utils_Tuple2(clientX, clientY),
-													astne));
-										}),
-									A2(
-										$elm$json$Json$Decode$at,
-										_List_fromArray(
-											['changedTouches', '1', 'clientX']),
-										$elm$json$Json$Decode$float),
-									A2(
-										$elm$json$Json$Decode$at,
-										_List_fromArray(
-											['changedTouches', '1', 'clientY']),
-										$elm$json$Json$Decode$float)) : $elm$json$Json$Decode$succeed($author$project$Main$MsgNoOp);
+								return ($elm$core$List$length(touches) === 2) ? $elm$json$Json$Decode$succeed(
+									$author$project$Main$MsgCloneUs(root)) : $elm$json$Json$Decode$succeed($author$project$Main$MsgNoOp);
 							},
 							A2(
 								$elm$json$Json$Decode$field,
@@ -14601,7 +14582,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('新しい関数名'),
+												$elm$html$Html$Attributes$placeholder('まんゆー'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(
