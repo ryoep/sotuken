@@ -201,6 +201,7 @@ type alias Model =
     , initYBox : String         -- タートルの初期位置のy座標を入力するボックス
     , initHeadingBox : String   -- タートルの初期方向を入力するボックス
     , turtle : Turtle
+    , touchCount : Int -- ここに touchCount を追加
     }
 
 
@@ -363,6 +364,7 @@ init _ =
           , penState = Up
           , lines = []
           }
+        , touchCount = 0  -- 新しく追加したフィールドを初期化
       }
     , Cmd.none
     )
@@ -383,6 +385,7 @@ subscriptions model =
 type Msg
     = MsgCloneUs (ASTxy Node)
     | MsgCloneTouch Position
+    | MsgStartTouch Int -- タッチ開始時の指の数を保存
     | MsgNoOp
     | MsgLetMeRoot (ASTxy Node) Position
     | MsgMoveUs Position
@@ -464,6 +467,8 @@ update msg model =
             ( cloneUs ast model, Cmd.none )
         MsgCloneTouch pos ->
             ( cloneTouchBlock pos model, Cmd.none )
+        MsgStartTouch count ->
+            ( { model | touchCount = count }, Cmd.none )
         MsgNoOp ->
             -- NoAction では何もせずそのまま model を返す
             (model, Cmd.none)
@@ -1910,7 +1915,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "ユースいｊｆｊｍｋ" --新しい関数名
+                        , placeholder "あもりむ" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -2002,17 +2007,28 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
 
          --追加
          --touchend
-        , preventDefaultOn "touchend"
-            <| whenDragging model
-                <| Decode.succeed
-                    <| MsgAttachMe root 
+        --, preventDefaultOn "touchend"
+          --  <| whenDragging model
+            --    <| Decode.succeed
+              --      <| MsgAttachMe root 
+
+        --, on "touchend"
+          --  (Decode.map2
+            --    (\clientX clientY -> MsgCloneTouch (clientX, clientY))
+              --  (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
+                --(Decode.at ["changedTouches", "0", "clientY"] Decode.float)
+            --)
 
         , on "touchend"
-            (Decode.map2
-                (\clientX clientY -> MsgCloneTouch (clientX, clientY))
-                (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
-                (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
+            (Decode.succeed
+                (if model.touchCount == 2 then
+                    MsgCloneUs root
+                else
+                    MsgNoOp
+                )
             )
+
+
 
         -- mousedown
         , on "mousedown"
@@ -2041,15 +2057,8 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
         , on "touchstart"
             (Decode.field "changedTouches" (Decode.list Decode.value)
                 |> Decode.map List.length
-                |> Decode.andThen
-                    (\touchCount ->
-                        if touchCount == 2 then
-                            Decode.succeed (MsgCloneUs root)
-                        else
-                            Decode.succeed MsgNoOp
-                    )
+                |> Decode.map MsgStartTouch
             )
-
 
 
 
