@@ -1897,7 +1897,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "マーカス"
+                        , placeholder "ぶるーの" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -1993,9 +1993,24 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
 
         --とりあえずブロックにタッチしたら複製できる
                 -- タッチイベントで複製をトリガー
-                , on "touchstart"
-                    <| whenNotDragging model
-                        <| Decode.succeed (MsgCloneUs root)
+                --, on "touchstart"
+                  --  <| whenNotDragging model
+                    --    <| Decode.succeed (MsgCloneUs root)
+
+        , on "touchstart"
+            <| whenNotDragging model
+                <| Decode.map2
+                    (\touches clientX ->
+                        if touches == 2 then
+                            MsgCloneUs root
+                        else
+                            MsgNOP -- タッチ数が2でない場合は何もしない
+                    )
+                    (Decode.field "touches" Decode.int)
+                    (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
+
+
+
 
 
         -- contextmenu

@@ -8769,12 +8769,14 @@ var $author$project$Main$MsgCloneUs = function (a) {
 	return {$: 'MsgCloneUs', a: a};
 };
 var $author$project$Main$MsgDblClick = {$: 'MsgDblClick'};
+var $author$project$Main$MsgNOP = {$: 'MsgNOP'};
 var $author$project$Main$MsgStartDnD = F2(
 	function (a, b) {
 		return {$: 'MsgStartDnD', a: a, b: b};
 	});
 var $author$project$Main$ToBottom = {$: 'ToBottom'};
 var $author$project$Main$ToRight = {$: 'ToRight'};
+var $elm$json$Json$Decode$int = _Json_decodeInt;
 var $elm$virtual_dom$VirtualDom$lazy3 = _VirtualDom_lazy3;
 var $elm$html$Html$Lazy$lazy3 = $elm$virtual_dom$VirtualDom$lazy3;
 var $elm$virtual_dom$VirtualDom$lazy4 = _VirtualDom_lazy4;
@@ -8783,7 +8785,6 @@ var $author$project$Main$MsgLetMeRoot = F2(
 	function (a, b) {
 		return {$: 'MsgLetMeRoot', a: a, b: b};
 	});
-var $author$project$Main$MsgNOP = {$: 'MsgNOP'};
 var $author$project$Main$MsgCheckString = F3(
 	function (a, b, c) {
 		return {$: 'MsgCheckString', a: a, b: b, c: c};
@@ -9679,7 +9680,6 @@ var $author$project$Main$viewBrick = F3(
 				}()
 				]));
 	});
-var $elm$json$Json$Decode$int = _Json_decodeInt;
 var $elm_community$json_extra$Json$Decode$Extra$when = F3(
 	function (checkDecoder, check, passDecoder) {
 		return A2(
@@ -9906,8 +9906,18 @@ var $author$project$Main$viewASTRoot = F2(
 					A2(
 						$author$project$Main$whenNotDragging,
 						model,
-						$elm$json$Json$Decode$succeed(
-							$author$project$Main$MsgCloneUs(root)))),
+						A3(
+							$elm$json$Json$Decode$map2,
+							F2(
+								function (touches, clientX) {
+									return (touches === 2) ? $author$project$Main$MsgCloneUs(root) : $author$project$Main$MsgNOP;
+								}),
+							A2($elm$json$Json$Decode$field, 'touches', $elm$json$Json$Decode$int),
+							A2(
+								$elm$json$Json$Decode$at,
+								_List_fromArray(
+									['changedTouches', '0', 'clientX']),
+								$elm$json$Json$Decode$float)))),
 					A2(
 					$author$project$Main$preventDefaultOn,
 					'contextmenu',
@@ -10186,7 +10196,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('マーカス'),
+												$elm$html$Html$Attributes$placeholder('ぶるーの'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(
