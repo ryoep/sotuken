@@ -14293,14 +14293,17 @@ var $author$project$Main$viewASTRoot = F2(
 					'touchstart',
 					A2(
 						$elm$json$Json$Decode$andThen,
-						function (touches) {
-							return ($elm$core$List$length(touches) === 2) ? $elm$json$Json$Decode$succeed(
+						function (touchCount) {
+							return (touchCount === 2) ? $elm$json$Json$Decode$succeed(
 								$author$project$Main$MsgCloneUs(root)) : $elm$json$Json$Decode$succeed($author$project$Main$MsgNoOp);
 						},
 						A2(
-							$elm$json$Json$Decode$field,
-							'changedTouches',
-							$elm$json$Json$Decode$list($elm$json$Json$Decode$value)))),
+							$elm$json$Json$Decode$map,
+							$elm$core$List$length,
+							A2(
+								$elm$json$Json$Decode$field,
+								'changedTouches',
+								$elm$json$Json$Decode$list($elm$json$Json$Decode$value))))),
 					A2(
 					$author$project$Main$preventDefaultOn,
 					'contextmenu',
@@ -14579,7 +14582,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('ユース'),
+												$elm$html$Html$Attributes$placeholder('ユースいｊｆｊｍｋ'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(
