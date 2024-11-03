@@ -23,11 +23,6 @@ import Process exposing (..)
 import File exposing (File)
 import File.Download as Download
 import File.Select as Select
-import Tuple exposing (first, second)
-
-
-
-
 
 main : Program () Model Msg
 main =
@@ -201,7 +196,6 @@ type alias Model =
     , initYBox : String         -- タートルの初期位置のy座標を入力するボックス
     , initHeadingBox : String   -- タートルの初期方向を入力するボックス
     , turtle : Turtle
-    , touchCount : Int -- ここに touchCount を追加
     }
 
 
@@ -364,7 +358,6 @@ init _ =
           , penState = Up
           , lines = []
           }
-        , touchCount = 0  -- 新しく追加したフィールドを初期化
       }
     , Cmd.none
     )
@@ -384,9 +377,6 @@ subscriptions model =
 
 type Msg
     = MsgCloneUs (ASTxy Node)
-    | MsgCloneTouch Position
-    | MsgStartTouch Int -- タッチ開始時の指の数を保存
-    | MsgNoOp
     | MsgLetMeRoot (ASTxy Node) Position
     | MsgMoveUs Position
     | MsgAttachMe (ASTxy Node)
@@ -465,13 +455,6 @@ update msg model =
     case msg of
         MsgCloneUs ast ->
             ( cloneUs ast model, Cmd.none )
-        MsgCloneTouch pos ->
-            ( cloneTouchBlock pos model, Cmd.none )
-        MsgStartTouch count ->
-            ( { model | touchCount = count }, Cmd.none )
-        MsgNoOp ->
-            -- NoAction では何もせずそのまま model を返す
-            (model, Cmd.none)
         MsgStartDnD rootXY mouseXY ->
             ( startDnD rootXY mouseXY model, Cmd.none )
         MsgLetMeRoot (ASTxy rootXY ast) mouseXY ->
@@ -1852,7 +1835,6 @@ view model =
                          (Decode.field "pageX" Decode.float)
                          (Decode.field "pageY" Decode.float)
 
-
         -- 追加
         -- touchmove
         , preventDefaultOn "touchmove"
@@ -1915,7 +1897,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "新しい関数名" --新しい関数名
+                        , placeholder "新しい関数名"
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -1929,7 +1911,7 @@ view model =
                     ]
                 , div
                     []
-                    [ text "最初のx座標 : " 
+                    [ text "さいしょのx座標 : "
                     , input
                       [ style "width" "50px"
                         --, placeholder "さいしょのx座標"
@@ -1968,29 +1950,6 @@ view model =
         ]
 
 
--- 二本指タッチでの複製を処理する関数
-cloneTouchBlock : Position -> Model -> Model
-cloneTouchBlock pos model =
-    let
-        newModel = { model | getASTRoots = List.map (cloneIfTouched pos) model.getASTRoots }
-    in
-    newModel
-
-
-
-cloneIfTouched : Position -> ASTxy Node -> ASTxy Node
-cloneIfTouched touchPos (ASTxy pos ast) =
-    if isTouching pos touchPos then
-        let clonedAST = ASTxy (first pos + 10, second pos + 10) ast
-        in clonedAST
-    else
-        ASTxy pos ast
-
-
-isTouching : Position -> Position -> Bool
-isTouching (x1, y1) (x2, y2) =
-    abs (x1 - x2) < 20 && abs (y1 - y2) < 20
-
 -- 根のブロックの描画
 viewASTRoot : Model -> ASTxy Node -> Html Msg
 viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
@@ -2005,21 +1964,12 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                       <| Decode.succeed
                           <| MsgAttachMe root
 
-         --追加
-         --touchend
+        -- 追加
+        -- touchend
         , preventDefaultOn "touchend"
             <| whenDragging model
                 <| Decode.succeed
-                    <| MsgAttachMe root 
-
-        --, on "touchend"
-          --  (Decode.map2
-            --    (\clientX clientY -> MsgCloneTouch (clientX, clientY))
-              --  (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
-                --(Decode.at ["changedTouches", "0", "clientY"] Decode.float)
-            --)
-
-
+                    <| MsgAttachMe root
 
 
         -- mousedown
@@ -2029,41 +1979,17 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                       -- MsgLetMeRootは根には無意味、代わりにMsgStartDnDを単独でセット
                       <| Decode.map2
                              (\pageX pageY -> MsgStartDnD ( x, y ) ( pageX, pageY ))
-                             (Decode.field "pageX" Decode.float)
+                             (Decode.field "pageX" Decode.float)--6週目　xyは211行目で取得しているのでpagex,pageyを取得する方法を考える。
                              (Decode.field "pageY" Decode.float)
 
-        --, on "touchstart"
-          --  <| whenNotDragging model
-            --    <| Decode.map2
-              --      (\clientX clientY -> MsgStartDnD (x, y) (clientX, clientY))
-                --    (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
-                  --  (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
-
---とりあえずブロックにタッチしたら複製できる
-        -- タッチイベントで複製をトリガー
+        -- 追加
+        -- touchstart
         , on "touchstart"
-              <| whenNotDragging model
-                  <| Decode.succeed (MsgCloneUs root)
-
-
-        --on "touchstart"
-          --  (Decode.field "touches" (Decode.list Decode.value)
-            --    |> Decode.andThen
-              --      (\touches ->
-                --        if List.length touches == 2 then
-                  --          Decode.succeed (MsgCloneUs root)
-                    --    else
-                      --      Decode.succeed MsgNoOp
-                    --)
-            --)
-
-
-
-
-
-
-
-
+            <| whenNotDragging model
+                <| Decode.map2
+                    (\clientX clientY -> MsgStartDnD (x, y) (clientX, clientY))
+                    (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
+                    (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
 
 
         -- contextmenu
@@ -2077,17 +2003,11 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
         , on "dblclick"
               <| whenLeftButtonIsDown
                   <| Decode.succeed MsgDblClick
-
-
-
-
-
         ]
         [ ( "N", lazy3 viewBrick model ( x, y ) n)
         , ( "R", lazy4 viewAST model ( x + interval model, y ) ToRight r )
         , ( "B", lazy4 viewAST model (x, y + interval model ) ToBottom b )
         ]
-
 
 
 -- 根以外の木の再帰的描画
@@ -2148,16 +2068,11 @@ viewAST model ( x, y ) direction ast =
                           <| whenRightButtonIsDown
                               <| Decode.succeed
                                   <| MsgCloneUs (ASTxy ( x, y ) (ASTne n b r))
-
-
-
                 ]
                 [ ( "N", lazy3 viewBrick model ( x, y ) n ) -- 実際のブロックの描画はviewBrickで
                 , ( "R", lazy4 viewAST model ( x + interval model, y ) ToRight r )
                 , ( "B", lazy4 viewAST model ( x, y + interval model ) ToBottom b )
                 ]
-
-
 
 
 viewDataList : String -> Html Msg
@@ -2202,7 +2117,7 @@ viewBrick model xy node =
                 SpacerBrick ->
                     "white"
         image =
-            "dist/assets/" ++
+            "assets/" ++
             case node.getBrickType of
                 BasicBrick ->
                    if node.getBrickCommand == CommandToioMoveForward
