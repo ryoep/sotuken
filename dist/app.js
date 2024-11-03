@@ -14297,7 +14297,7 @@ var $author$project$Main$viewASTRoot = F2(
 						A2(
 							$elm$json$Json$Decode$andThen,
 							function (touches) {
-								return ($elm$core$List$length(touches) === 2) ? $elm$json$Json$Decode$succeed(
+								return ($elm$core$List$length(touches) === 1) ? $elm$json$Json$Decode$succeed(
 									$author$project$Main$MsgCloneUs(root)) : $elm$json$Json$Decode$succeed($author$project$Main$MsgNoOp);
 							},
 							A2(
@@ -14582,7 +14582,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('まんゆー'),
+												$elm$html$Html$Attributes$placeholder('ユナイテッド'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(

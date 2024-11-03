@@ -1910,7 +1910,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "まんゆー" --新しい関数名
+                        , placeholder "ユナイテッド" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -2042,7 +2042,7 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
             <| whenNotDragging model
                 <| Decode.andThen
                     (\touches ->
-                        if List.length touches == 2 then
+                        if List.length touches == 1 then
                             Decode.succeed (MsgCloneUs root)
                         else
                             Decode.succeed MsgNoOp
