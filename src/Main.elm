@@ -2047,7 +2047,7 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                         else
                             Decode.succeed MsgNoOp
                     )
-                    (Decode.field "changedTouches" (Decode.list Decode.value))
+            (Decode.field "changedTouches" (Decode.list (Decode.field "identifier" Decode.int)))
 
 
 

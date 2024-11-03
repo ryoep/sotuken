@@ -13146,6 +13146,7 @@ var $author$project$Main$MsgStartDnD = F2(
 	});
 var $author$project$Main$ToBottom = {$: 'ToBottom'};
 var $author$project$Main$ToRight = {$: 'ToRight'};
+var $elm$json$Json$Decode$int = _Json_decodeInt;
 var $elm$virtual_dom$VirtualDom$lazy4 = _VirtualDom_lazy4;
 var $elm$html$Html$Lazy$lazy4 = $elm$virtual_dom$VirtualDom$lazy4;
 var $author$project$Main$MsgLetMeRoot = F2(
@@ -14047,7 +14048,6 @@ var $author$project$Main$viewBrick = F3(
 				}()
 				]));
 	});
-var $elm$json$Json$Decode$int = _Json_decodeInt;
 var $elm_community$json_extra$Json$Decode$Extra$when = F3(
 	function (checkDecoder, check, passDecoder) {
 		return A2(
@@ -14303,7 +14303,8 @@ var $author$project$Main$viewASTRoot = F2(
 							A2(
 								$elm$json$Json$Decode$field,
 								'changedTouches',
-								$elm$json$Json$Decode$list($elm$json$Json$Decode$value))))),
+								$elm$json$Json$Decode$list(
+									A2($elm$json$Json$Decode$field, 'identifier', $elm$json$Json$Decode$int)))))),
 					A2(
 					$author$project$Main$preventDefaultOn,
 					'contextmenu',
