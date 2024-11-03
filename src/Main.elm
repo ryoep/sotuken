@@ -1897,7 +1897,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "ぶるーの" --新しい関数名
+                        , placeholder "まくとみねい" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -1999,15 +1999,19 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
 
         , on "touchstart"
             <| whenNotDragging model
-                <| Decode.map2
-                    (\touches clientX ->
-                        if touches == 2 then
-                            MsgCloneUs root
-                        else
-                            MsgNOP -- タッチ数が2でない場合は何もしない
+                <| Decode.map3
+                    (\touches clientX clientY -> 
+                        if touches == 1 then 
+                            MsgStartDnD (x, y) (clientX, clientY) -- 一本指ならドラッグ開始
+                        else if touches == 2 then 
+                            MsgCloneUs root     -- 二本指なら複製
+                        else 
+                            MsgNOP -- それ以外は何もしない
                     )
                     (Decode.field "touches" Decode.int)
                     (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
+                    (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
+
 
 
 

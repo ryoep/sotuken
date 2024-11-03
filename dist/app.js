@@ -9906,17 +9906,25 @@ var $author$project$Main$viewASTRoot = F2(
 					A2(
 						$author$project$Main$whenNotDragging,
 						model,
-						A3(
-							$elm$json$Json$Decode$map2,
-							F2(
-								function (touches, clientX) {
-									return (touches === 2) ? $author$project$Main$MsgCloneUs(root) : $author$project$Main$MsgNOP;
+						A4(
+							$elm$json$Json$Decode$map3,
+							F3(
+								function (touches, clientX, clientY) {
+									return (touches === 1) ? A2(
+										$author$project$Main$MsgStartDnD,
+										_Utils_Tuple2(x, y),
+										_Utils_Tuple2(clientX, clientY)) : ((touches === 2) ? $author$project$Main$MsgCloneUs(root) : $author$project$Main$MsgNOP);
 								}),
 							A2($elm$json$Json$Decode$field, 'touches', $elm$json$Json$Decode$int),
 							A2(
 								$elm$json$Json$Decode$at,
 								_List_fromArray(
 									['changedTouches', '0', 'clientX']),
+								$elm$json$Json$Decode$float),
+							A2(
+								$elm$json$Json$Decode$at,
+								_List_fromArray(
+									['changedTouches', '0', 'clientY']),
 								$elm$json$Json$Decode$float)))),
 					A2(
 					$author$project$Main$preventDefaultOn,
@@ -10196,7 +10204,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('ぶるーの'),
+												$elm$html$Html$Attributes$placeholder('まくとみねい'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(
