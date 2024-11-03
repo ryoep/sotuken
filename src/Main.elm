@@ -1910,7 +1910,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "マーカス" --新しい関数名
+                        , placeholder "アモリム" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -2002,10 +2002,10 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
 
          --追加
          --touchend
-        --, preventDefaultOn "touchend"
-          --  <| whenDragging model
-            --    <| Decode.succeed
-              --      <| MsgAttachMe root 
+        , preventDefaultOn "touchend"
+            <| whenDragging model
+                <| Decode.succeed
+                    <| MsgAttachMe root 
 
         , on "touchend"
             (Decode.map2
@@ -2031,12 +2031,10 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                 --    (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
                   --  (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
 
+        -- タッチイベントで複製をトリガー
         , on "touchstart"
-            (Decode.map2
-                (\clientX clientY -> MsgStartDnD (clientX, clientY) (clientX, clientY))
-                (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
-                (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
-            )
+              <| whenNotDragging model
+                  <| Decode.succeed (MsgCloneUs root)
 
 
 
