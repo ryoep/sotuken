@@ -8776,11 +8776,12 @@ var $author$project$Main$MsgStartDnD = F2(
 	});
 var $author$project$Main$ToBottom = {$: 'ToBottom'};
 var $author$project$Main$ToRight = {$: 'ToRight'};
-var $elm$json$Json$Decode$int = _Json_decodeInt;
 var $elm$virtual_dom$VirtualDom$lazy3 = _VirtualDom_lazy3;
 var $elm$html$Html$Lazy$lazy3 = $elm$virtual_dom$VirtualDom$lazy3;
 var $elm$virtual_dom$VirtualDom$lazy4 = _VirtualDom_lazy4;
 var $elm$html$Html$Lazy$lazy4 = $elm$virtual_dom$VirtualDom$lazy4;
+var $elm$core$Debug$log = _Debug_log;
+var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $author$project$Main$MsgLetMeRoot = F2(
 	function (a, b) {
 		return {$: 'MsgLetMeRoot', a: a, b: b};
@@ -9680,6 +9681,7 @@ var $author$project$Main$viewBrick = F3(
 				}()
 				]));
 	});
+var $elm$json$Json$Decode$int = _Json_decodeInt;
 var $elm_community$json_extra$Json$Decode$Extra$when = F3(
 	function (checkDecoder, check, passDecoder) {
 		return A2(
@@ -9909,13 +9911,18 @@ var $author$project$Main$viewASTRoot = F2(
 						A4(
 							$elm$json$Json$Decode$map3,
 							F3(
-								function (touches, clientX, clientY) {
+								function (touchList, clientX, clientY) {
+									var touches = $elm$core$List$length(touchList);
+									var _v2 = A2($elm$core$Debug$log, 'Touch count', touches);
 									return (touches === 1) ? A2(
 										$author$project$Main$MsgStartDnD,
 										_Utils_Tuple2(x, y),
 										_Utils_Tuple2(clientX, clientY)) : ((touches === 2) ? $author$project$Main$MsgCloneUs(root) : $author$project$Main$MsgNOP);
 								}),
-							A2($elm$json$Json$Decode$field, 'touches', $elm$json$Json$Decode$int),
+							A2(
+								$elm$json$Json$Decode$field,
+								'changedTouches',
+								$elm$json$Json$Decode$list($elm$json$Json$Decode$value)),
 							A2(
 								$elm$json$Json$Decode$at,
 								_List_fromArray(
@@ -10204,7 +10211,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('まくとみねい'),
+												$elm$html$Html$Attributes$placeholder('新しい関数名'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(
