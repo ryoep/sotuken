@@ -1906,7 +1906,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "あもりむ" --新しい関数名
+                        , placeholder "buru-no" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -2007,9 +2007,6 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                    --     <| Decode.succeed (MsgCloneUs root)
 
 
-        , preventDefaultOn "Duplicate"
-            <| Decode.map 
-                (\_ -> (MsgCloneUs root)) (decodeTouches root)
 
         --, on "touchstart" (Decode.succeed (MsgLongPressStart root))
         --, on "touchend" (Decode.succeed MsgLongPressEnd)
@@ -2017,11 +2014,17 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
 
         -- contextmenu
         -- コンテクストメニューが開かないようにpreventDefaultが必要
+        --, preventDefaultOn "contextmenu"
+          --    <| whenNotDragging model
+            --      <| whenRightButtonIsDown
+              --        <| Decode.succeed
+                --          <| MsgCloneUs (ASTxy ( x, y ) (ASTne n b r))
+
         , preventDefaultOn "contextmenu"
               <| whenNotDragging model
-                  <| whenRightButtonIsDown
-                      <| Decode.succeed
-                          <| MsgCloneUs (ASTxy ( x, y ) (ASTne n b r))
+                    <| Decode.succeed
+                        <| MsgCloneUs (ASTxy ( x, y ) (ASTne n b r))
+
         -- dblclick
         , on "dblclick"
               <| whenLeftButtonIsDown
@@ -2032,16 +2035,7 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
         , ( "B", lazy4 viewAST model (x, y + interval model ) ToBottom b )
         ]
 
-decodeTouches : ASTxy Node -> Decode.Decoder Msg
-decodeTouches root =
-    Decode.field "changedTouches" (Decode.list Decode.value) --changedTouchesというリストの値をすべてデコード
-        |> Decode.andThen
-            (\touches -> --changedTouchesのリストの値を引数としている。
-                if List.length touches == 2 then
-                    Decode.succeed (MsgCloneUs root) 
-                else
-                    Decode.fail "Not a two-finger touch"
-            )
+
 
 
 -- 根以外の木の再帰的描画

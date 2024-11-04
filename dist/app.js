@@ -8794,19 +8794,6 @@ var $author$project$Main$MsgStartDnD = F2(
 	});
 var $author$project$Main$ToBottom = {$: 'ToBottom'};
 var $author$project$Main$ToRight = {$: 'ToRight'};
-var $elm$json$Json$Decode$value = _Json_decodeValue;
-var $author$project$Main$decodeTouches = function (root) {
-	return A2(
-		$elm$json$Json$Decode$andThen,
-		function (touches) {
-			return ($elm$core$List$length(touches) === 2) ? $elm$json$Json$Decode$succeed(
-				$author$project$Main$MsgCloneUs(root)) : $elm$json$Json$Decode$fail('Not a two-finger touch');
-		},
-		A2(
-			$elm$json$Json$Decode$field,
-			'changedTouches',
-			$elm$json$Json$Decode$list($elm$json$Json$Decode$value)));
-};
 var $elm$virtual_dom$VirtualDom$lazy3 = _VirtualDom_lazy3;
 var $elm$html$Html$Lazy$lazy3 = $elm$virtual_dom$VirtualDom$lazy3;
 var $elm$virtual_dom$VirtualDom$lazy4 = _VirtualDom_lazy4;
@@ -9959,26 +9946,16 @@ var $author$project$Main$viewASTRoot = F2(
 								$elm$json$Json$Decode$float)))),
 					A2(
 					$author$project$Main$preventDefaultOn,
-					'Duplicate',
-					A2(
-						$elm$json$Json$Decode$map,
-						function (_v2) {
-							return $author$project$Main$MsgCloneUs(root);
-						},
-						$author$project$Main$decodeTouches(root))),
-					A2(
-					$author$project$Main$preventDefaultOn,
 					'contextmenu',
 					A2(
 						$author$project$Main$whenNotDragging,
 						model,
-						$author$project$Main$whenRightButtonIsDown(
-							$elm$json$Json$Decode$succeed(
-								$author$project$Main$MsgCloneUs(
-									A2(
-										$author$project$Main$ASTxy,
-										_Utils_Tuple2(x, y),
-										A3($author$project$Main$ASTne, n, b, r))))))),
+						$elm$json$Json$Decode$succeed(
+							$author$project$Main$MsgCloneUs(
+								A2(
+									$author$project$Main$ASTxy,
+									_Utils_Tuple2(x, y),
+									A3($author$project$Main$ASTne, n, b, r)))))),
 					A2(
 					$author$project$Main$on,
 					'dblclick',
@@ -10244,7 +10221,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('あもりむ'),
+												$elm$html$Html$Attributes$placeholder('buru-no'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(
