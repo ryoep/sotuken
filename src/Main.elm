@@ -1975,10 +1975,10 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
 
         -- 追加
         -- touchend
-      --  , preventDefaultOn "touchend"
-        --    <| whenDragging model
-          --      <| Decode.succeed
-            --        <| MsgAttachMe root
+        , preventDefaultOn "touchend"
+            <| whenDragging model
+                <| Decode.succeed
+                    <| MsgAttachMe root
 
 
         -- mousedown
@@ -1993,12 +1993,12 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
 
         -- 追加
         -- touchstart
-       -- , on "touchstart"
-         --   <| whenNotDragging model
-            --    <| Decode.map2
-              --      (\clientX clientY -> MsgStartDnD (x, y) (clientX, clientY))
-                --    (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
-                  --  (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
+        , on "touchstart"
+            <| whenNotDragging model
+                <| Decode.map2
+                    (\clientX clientY -> MsgStartDnD (x, y) (clientX, clientY))
+                    (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
+                    (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
 
         --とりあえずブロックにタッチしたら複製できる
                 -- タッチイベントで複製をトリガー
@@ -2006,8 +2006,13 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                  --   <| whenNotDragging model
                    --     <| Decode.succeed (MsgCloneUs root)
 
-        , on "touchstart" (Decode.succeed (MsgLongPressStart root))
-        , on "touchend" (Decode.succeed MsgLongPressEnd)
+
+        , preventDefaultOn "Duplicate"
+            <| Decode.map 
+                (\_ -> (MsgCloneUs root)) (decodeTouches root)
+
+        --, on "touchstart" (Decode.succeed (MsgLongPressStart root))
+        --, on "touchend" (Decode.succeed MsgLongPressEnd)
 
 
         -- contextmenu
@@ -2026,6 +2031,17 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
         , ( "R", lazy4 viewAST model ( x + interval model, y ) ToRight r )
         , ( "B", lazy4 viewAST model (x, y + interval model ) ToBottom b )
         ]
+
+decodeTouches : ASTxy Node -> Decode.Decoder Msg
+decodeTouches root =
+    Decode.field "changedTouches" (Decode.list Decode.value) --changedTouchesというリストの値をすべてデコード
+        |> Decode.andThen
+            (\touches -> --changedTouchesのリストの値を引数としている。
+                if List.length touches == 2 then
+                    Decode.succeed (MsgCloneUs root) 
+                else
+                    Decode.fail "Not a two-finger touch"
+            )
 
 
 -- 根以外の木の再帰的描画

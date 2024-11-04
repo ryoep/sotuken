@@ -8788,16 +8788,25 @@ var $author$project$Main$MsgCloneUs = function (a) {
 	return {$: 'MsgCloneUs', a: a};
 };
 var $author$project$Main$MsgDblClick = {$: 'MsgDblClick'};
-var $author$project$Main$MsgLongPressEnd = {$: 'MsgLongPressEnd'};
-var $author$project$Main$MsgLongPressStart = function (a) {
-	return {$: 'MsgLongPressStart', a: a};
-};
 var $author$project$Main$MsgStartDnD = F2(
 	function (a, b) {
 		return {$: 'MsgStartDnD', a: a, b: b};
 	});
 var $author$project$Main$ToBottom = {$: 'ToBottom'};
 var $author$project$Main$ToRight = {$: 'ToRight'};
+var $elm$json$Json$Decode$value = _Json_decodeValue;
+var $author$project$Main$decodeTouches = function (root) {
+	return A2(
+		$elm$json$Json$Decode$andThen,
+		function (touches) {
+			return ($elm$core$List$length(touches) === 2) ? $elm$json$Json$Decode$succeed(
+				$author$project$Main$MsgCloneUs(root)) : $elm$json$Json$Decode$fail('Not a two-finger touch');
+		},
+		A2(
+			$elm$json$Json$Decode$field,
+			'changedTouches',
+			$elm$json$Json$Decode$list($elm$json$Json$Decode$value)));
+};
 var $elm$virtual_dom$VirtualDom$lazy3 = _VirtualDom_lazy3;
 var $elm$html$Html$Lazy$lazy3 = $elm$virtual_dom$VirtualDom$lazy3;
 var $elm$virtual_dom$VirtualDom$lazy4 = _VirtualDom_lazy4;
@@ -9898,6 +9907,14 @@ var $author$project$Main$viewASTRoot = F2(
 							$elm$json$Json$Decode$succeed(
 								$author$project$Main$MsgAttachMe(root))))),
 					A2(
+					$author$project$Main$preventDefaultOn,
+					'touchend',
+					A2(
+						$author$project$Main$whenDragging,
+						model,
+						$elm$json$Json$Decode$succeed(
+							$author$project$Main$MsgAttachMe(root)))),
+					A2(
 					$author$project$Main$on,
 					'mousedown',
 					A2(
@@ -9918,12 +9935,37 @@ var $author$project$Main$viewASTRoot = F2(
 					A2(
 					$author$project$Main$on,
 					'touchstart',
-					$elm$json$Json$Decode$succeed(
-						$author$project$Main$MsgLongPressStart(root))),
 					A2(
-					$author$project$Main$on,
-					'touchend',
-					$elm$json$Json$Decode$succeed($author$project$Main$MsgLongPressEnd)),
+						$author$project$Main$whenNotDragging,
+						model,
+						A3(
+							$elm$json$Json$Decode$map2,
+							F2(
+								function (clientX, clientY) {
+									return A2(
+										$author$project$Main$MsgStartDnD,
+										_Utils_Tuple2(x, y),
+										_Utils_Tuple2(clientX, clientY));
+								}),
+							A2(
+								$elm$json$Json$Decode$at,
+								_List_fromArray(
+									['changedTouches', '0', 'clientX']),
+								$elm$json$Json$Decode$float),
+							A2(
+								$elm$json$Json$Decode$at,
+								_List_fromArray(
+									['changedTouches', '0', 'clientY']),
+								$elm$json$Json$Decode$float)))),
+					A2(
+					$author$project$Main$preventDefaultOn,
+					'Duplicate',
+					A2(
+						$elm$json$Json$Decode$map,
+						function (_v2) {
+							return $author$project$Main$MsgCloneUs(root);
+						},
+						$author$project$Main$decodeTouches(root))),
 					A2(
 					$author$project$Main$preventDefaultOn,
 					'contextmenu',
