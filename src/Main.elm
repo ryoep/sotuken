@@ -1906,7 +1906,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "ままうらうぃ" --新しい関数名
+                        , placeholder "新しい関数名" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -2017,11 +2017,18 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
         --, preventDefaultOn "contextmenu"
           --    <| whenNotDragging model
             --      <| whenRightButtonIsDown
-              --        <| Decode.succeed
+                --      <| Decode.succeed
                 --          <| MsgCloneUs (ASTxy ( x, y ) (ASTne n b r))
 
-        , preventDefaultOn "contextmenu" 
-            <| (Decode.map (\_ -> (MsgCloneUs root)) Decode.value)
+
+        -- contextmenu
+        -- コンテクストメニューが開かないようにpreventDefaultが必要
+        , preventDefaultOn "contextmenu"
+            <| Decode.succeed
+                  <| MsgCloneUs (ASTxy ( x, y ) (ASTne n b r))
+
+        --, preventDefaultOn "contextmenu" 
+          --  <| (Decode.map (\_ -> (MsgCloneUs root)) Decode.value)
 
         -- dblclick
         , on "dblclick"

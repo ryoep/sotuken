@@ -8798,7 +8798,6 @@ var $elm$virtual_dom$VirtualDom$lazy3 = _VirtualDom_lazy3;
 var $elm$html$Html$Lazy$lazy3 = $elm$virtual_dom$VirtualDom$lazy3;
 var $elm$virtual_dom$VirtualDom$lazy4 = _VirtualDom_lazy4;
 var $elm$html$Html$Lazy$lazy4 = $elm$virtual_dom$VirtualDom$lazy4;
-var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $author$project$Main$MsgLetMeRoot = F2(
 	function (a, b) {
 		return {$: 'MsgLetMeRoot', a: a, b: b};
@@ -9948,12 +9947,12 @@ var $author$project$Main$viewASTRoot = F2(
 					A2(
 					$author$project$Main$preventDefaultOn,
 					'contextmenu',
-					A2(
-						$elm$json$Json$Decode$map,
-						function (_v2) {
-							return $author$project$Main$MsgCloneUs(root);
-						},
-						$elm$json$Json$Decode$value)),
+					$elm$json$Json$Decode$succeed(
+						$author$project$Main$MsgCloneUs(
+							A2(
+								$author$project$Main$ASTxy,
+								_Utils_Tuple2(x, y),
+								A3($author$project$Main$ASTne, n, b, r))))),
 					A2(
 					$author$project$Main$on,
 					'dblclick',
@@ -10219,7 +10218,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('ままうらうぃ'),
+												$elm$html$Html$Attributes$placeholder('新しい関数名'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(
