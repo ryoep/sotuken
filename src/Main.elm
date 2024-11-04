@@ -381,9 +381,6 @@ type Msg
     | MsgMoveUs Position
     | MsgAttachMe (ASTxy Node)
     | MsgStartDnD Position Position
-    | MsgLongPressStart (ASTxy Node)
-    | MsgLongPressEnd
-    | MsgLongPressTimeout (ASTxy Node)
     | MsgInputChanged Position Int String
     | MsgCheckString  Position Int String
     | MsgSetVarNames -- 全ての変数名を取得
@@ -466,12 +463,6 @@ update msg model =
             ( moveUs mouseXY model, Cmd.none )
         MsgAttachMe (ASTxy rootXY ast) ->
             ( model |> stopDnD rootXY |> attachMe (ASTxy rootXY ast), Cmd.none )
-        MsgLongPressStart ast ->
-            (model, Process.sleep 500 |> Task.perform (always (MsgLongPressTimeout ast))) -- タイマー設定
-        MsgLongPressTimeout ast ->
-            (cloneUs ast model, Cmd.none) -- タイマー完了後に複製
-        MsgLongPressEnd ->
-            (model, Cmd.none) -- タイマーをリセットするための処理
         MsgInputChanged xy place text ->
             ( modifyText modifyTextData   xy place text model, Cmd.none )
         MsgCheckString xy place text ->
@@ -1906,7 +1897,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "新しい関数名" --新しい関数名
+                        , placeholder "マーカス" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -2007,11 +1998,6 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                    --     <| Decode.succeed (MsgCloneUs root)
 
 
-
-        --, on "touchstart" (Decode.succeed (MsgLongPressStart root))
-        --, on "touchend" (Decode.succeed MsgLongPressEnd)
-
-
         -- contextmenu
         -- コンテクストメニューが開かないようにpreventDefaultが必要
         --, preventDefaultOn "contextmenu"
@@ -2024,8 +2010,9 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
         -- contextmenu
         -- コンテクストメニューが開かないようにpreventDefaultが必要
         , preventDefaultOn "contextmenu"
-            <| Decode.succeed
-                  <| MsgCloneUs (ASTxy ( x, y ) (ASTne n b r))
+            <| whenNotDragging model
+                <| Decode.succeed
+                      <| MsgCloneUs (ASTxy ( x, y ) (ASTne n b r))
 
         --, preventDefaultOn "contextmenu" 
           --  <| (Decode.map (\_ -> (MsgCloneUs root)) Decode.value)

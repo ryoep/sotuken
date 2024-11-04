@@ -5578,17 +5578,10 @@ var $author$project$Main$ASTxy = F2(
 var $author$project$Main$MsgLoaded = function (a) {
 	return {$: 'MsgLoaded', a: a};
 };
-var $author$project$Main$MsgLongPressTimeout = function (a) {
-	return {$: 'MsgLongPressTimeout', a: a};
-};
 var $author$project$Main$MsgSelected = function (a) {
 	return {$: 'MsgSelected', a: a};
 };
 var $author$project$Main$Start = {$: 'Start'};
-var $elm$core$Basics$always = F2(
-	function (a, _v0) {
-		return a;
-	});
 var $author$project$Main$ASTne = F3(
 	function (a, b, c) {
 		return {$: 'ASTne', a: a, b: b, c: c};
@@ -7264,6 +7257,10 @@ var $author$project$Main$move_wait = F2(
 			{wait_remaining: 0});
 	});
 var $author$project$Main$MsgRun = {$: 'MsgRun'};
+var $elm$core$Basics$always = F2(
+	function (a, _v0) {
+		return a;
+	});
 var $elm$core$Process$sleep = _Process_sleep;
 var $author$project$Main$proceed = A2(
 	$elm$core$Task$perform,
@@ -8438,22 +8435,6 @@ var $author$project$Main$update = F2(
 						A2($author$project$Main$ASTxy, rootXY, ast),
 						A2($author$project$Main$stopDnD, rootXY, model)),
 					$elm$core$Platform$Cmd$none);
-			case 'MsgLongPressStart':
-				var ast = msg.a;
-				return _Utils_Tuple2(
-					model,
-					A2(
-						$elm$core$Task$perform,
-						$elm$core$Basics$always(
-							$author$project$Main$MsgLongPressTimeout(ast)),
-						$elm$core$Process$sleep(500)));
-			case 'MsgLongPressTimeout':
-				var ast = msg.a;
-				return _Utils_Tuple2(
-					A2($author$project$Main$cloneUs, ast, model),
-					$elm$core$Platform$Cmd$none);
-			case 'MsgLongPressEnd':
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			case 'MsgInputChanged':
 				var xy = msg.a;
 				var place = msg.b;
@@ -9947,12 +9928,15 @@ var $author$project$Main$viewASTRoot = F2(
 					A2(
 					$author$project$Main$preventDefaultOn,
 					'contextmenu',
-					$elm$json$Json$Decode$succeed(
-						$author$project$Main$MsgCloneUs(
-							A2(
-								$author$project$Main$ASTxy,
-								_Utils_Tuple2(x, y),
-								A3($author$project$Main$ASTne, n, b, r))))),
+					A2(
+						$author$project$Main$whenNotDragging,
+						model,
+						$elm$json$Json$Decode$succeed(
+							$author$project$Main$MsgCloneUs(
+								A2(
+									$author$project$Main$ASTxy,
+									_Utils_Tuple2(x, y),
+									A3($author$project$Main$ASTne, n, b, r)))))),
 					A2(
 					$author$project$Main$on,
 					'dblclick',
@@ -10218,7 +10202,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('新しい関数名'),
+												$elm$html$Html$Attributes$placeholder('マーカス'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(
