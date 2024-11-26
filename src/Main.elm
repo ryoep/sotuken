@@ -1,6 +1,5 @@
 port module Main exposing (..)
 
-
 import Browser
 import Browser.Events exposing (onAnimationFrameDelta)
 import Html exposing (Attribute, Html, div, img, input, a, i, text, select, option, datalist)
@@ -25,7 +24,8 @@ import File exposing (File)
 import File.Download as Download
 import File.Select as Select
 
-port receiveTouchCount : (Int -> msg) -> Sub msg --追加
+port touchCountChanged : (Int -> msg) -> Sub msg --追加
+
 
 main : Program () Model Msg
 main =
@@ -192,6 +192,7 @@ type alias Model =
     { getBrickSize : Magnitude
     , getASTRoots : List (ASTxy Node)
     , getDnDInfo : DnDInfo
+    , touchCount : Int -- タッチ数を保持
     , varNames : Set String
     , routineNames : Set String -- ルーチン名のセット
     , routineBox : String       -- ルーチン名を入力するボックス
@@ -199,7 +200,6 @@ type alias Model =
     , initYBox : String         -- タートルの初期位置のy座標を入力するボックス
     , initHeadingBox : String   -- タートルの初期方向を入力するボックス
     , turtle : Turtle
-    , touchCount : Int  -- タッチ数を追加
     }
 
 
@@ -362,7 +362,7 @@ init _ =
           , penState = Up
           , lines = []
           }
-      , touchCount = 0  -- 初期値を設定
+      , touchCount = 0 -- 初期値を設定
       }
     , Cmd.none
     )
@@ -370,21 +370,17 @@ init _ =
 -- SUBSCRIPTIONS
 
 
---subscriptions : Model -> Sub Msg
---subscriptions model =
-    --if model.turtle.state == Running then
-      --  onAnimationFrameDelta MsgTick
-    --else Sub.none
-
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ receiveTouchCount UpdateTouchCount -- タッチ数を受け取る
-        , if model.turtle.state == Running then
-            onAnimationFrameDelta MsgTick
+        ([ touchCountChanged MsgTouchCountChanged -- タッチ数の変化を監視するサブスクリプション
+         ]
+            ++
+         (if model.turtle.state == Running then
+            [ onAnimationFrameDelta MsgTick ] -- アニメーションフレームを監視する
           else
-            Sub.none
-        ]
+            [])
+        )
 
 
 
@@ -394,9 +390,9 @@ subscriptions model =
 type Msg
     = MsgCloneUs (ASTxy Node)
     | MsgLetMeRoot (ASTxy Node) Position
+    | MsgTouchCountChanged Int --追加
     | MsgMoveUs Position
     | MsgAttachMe (ASTxy Node)
-    | MsgUpdateTouchCount Int  -- タッチ数を受け取る新しいメッセージ
     | MsgStartDnD Position Position
     | MsgInputChanged Position Int String
     | MsgCheckString  Position Int String
@@ -417,7 +413,6 @@ type Msg
     | MsgSelected File
     | MsgLoaded String
     | MsgNOP
-    | UpdateTouchCount Int  -- タッチ数更新用
 
 
 -- 指定したルーチンを取得する関数
@@ -473,19 +468,30 @@ update msg model =
     case msg of
         MsgCloneUs ast ->
             ( cloneUs ast model, Cmd.none )
-        UpdateTouchCount count ->
-            ({ model | touchCount = count }, Cmd.none)
+        MsgTouchCountChanged count -> --追加
+            ( { model | touchCount = count }, Cmd.none )
+        --MsgStartDnD rootXY mouseXY ->
+          --  ( startDnD rootXY mouseXY model, Cmd.none )
         MsgStartDnD rootXY mouseXY ->
-            ( startDnD rootXY mouseXY model, Cmd.none )
+            if model.touchCount == 1 then
+                ( startDnD rootXY mouseXY model, Cmd.none ) -- 1本指でドラッグ
+            else if model.touchCount == 2 then
+                ( model, Cmd.none ) -- 2本指の場合は何もしない（後で複製をトリガー）
+            else
+                ( model, Cmd.none )
         MsgLetMeRoot (ASTxy rootXY ast) mouseXY ->
             ( model |> letMeRoot (ASTxy rootXY ast) |> startDnD rootXY mouseXY, Cmd.none )
         MsgMoveUs mouseXY ->
             ( moveUs mouseXY model, Cmd.none )
-        MsgAttachMe (ASTxy rootXY ast) ->
-            ( model |> stopDnD rootXY |> attachMe (ASTxy rootXY ast), Cmd.none )
-        MsgUpdateTouchCount count ->
-            -- タッチ数をモデルに反映
-            ({ model | touchCount = count }, Cmd.none)
+        --MsgAttachMe (ASTxy rootXY ast) ->
+          --  ( model |> stopDnD rootXY |> attachMe (ASTxy rootXY ast), Cmd.none )
+        MsgAttachMe root ->
+            if model.touchCount == 1 then
+                (model |> stopDnD model.getDnDInfo.getRootXY |> attachMe root, Cmd.none)
+            else if model.touchCount == 2 then
+                ( cloneUs root model, Cmd.none ) -- 2本指で複製
+            else
+                ( model, Cmd.none )
         MsgInputChanged xy place text ->
             ( modifyText modifyTextData   xy place text model, Cmd.none )
         MsgCheckString xy place text ->
@@ -1846,18 +1852,28 @@ view : Model -> Html Msg
 view model =
     div
         [ class "columns"
+        -- mousemove
+        -- mousemoveイベントはフォーカスされたブロックではなくviewのルートで捕獲
+        -- このほうが激しくムーブしてポインタがブロックからはずれたときにも正しく動く
+        -- 寺尾くんがゼミBで発見したアイデアを採用
+        -- ブロック表面の画像だけがドラッグされないようにpreventDefaultが必要
         , preventDefaultOn "mousemove"
               <| whenDragging model
                   <| Decode.map2
                          (\pageX pageY -> MsgMoveUs ( pageX, pageY ))
                          (Decode.field "pageX" Decode.float)
                          (Decode.field "pageY" Decode.float)
+
+        -- 追加
+        -- touchmove
         , preventDefaultOn "touchmove"
             <| whenDragging model
                 <| Decode.map2
                     (\clientX clientY -> MsgMoveUs (clientX, clientY))
                     (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
                     (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
+
+        
         ]
         [ div
             [ class "column is-one-quarter"
@@ -1892,10 +1908,7 @@ view model =
             [ class "column is-one-quarter"
             , style "background-color" "skyblue"
             ]
-            [ -- タッチ数の表示を追加
-              div [ class "notification is-info" ]
-                [ text ("現在のタッチ数: " ++ String.fromInt model.touchCount) ]
-            , div
+            [ div   -- このあたりは適当に設定している
                 [ style "position" "relative"
                 , style "top" "10px"
                 ]
@@ -1913,7 +1926,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "ロナウド" --新しい関数名
+                        , placeholder "ぶるーの" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -1922,13 +1935,15 @@ view model =
                     , button
                         [ Decode.succeed MsgMakeNewRoutine |> on "click" ]
                         [ text "つくる" ]
+                    
                     , text (String.fromInt (List.length model.turtle.callStack)) -- デバッグ用 消してOK
                     ]
                 , div
                     []
                     [ text "さいしょのx座標 : "
                     , input
-                        [ style "width" "50px"
+                      [ style "width" "50px"
+                        --, placeholder "さいしょのx座標"
                         , value model.initXBox
                         , hidden False
                         , (Decode.map MsgInitXChanged targetValue) |> on "input"
@@ -1939,7 +1954,8 @@ view model =
                     []
                     [ text "さいしょのy座標 : "
                     , input
-                        [ style "width" "50px"
+                      [ style "width" "50px"
+                        --, placeholder "さいしょのy座標"
                         , value model.initYBox
                         , hidden False
                         , (Decode.map MsgInitYChanged targetValue) |> on "input"
@@ -1948,9 +1964,10 @@ view model =
                     ]
                 , div
                     []
-                    [ text "さいしょの向き : "
+                    [ text "さいしょの向き \u{00a0}\u{00a0}: "
                     , input
-                        [ style "width" "50px"
+                      [ style "width" "50px"
+                        --, placeholder "さいしょの角度"
                         , value model.initHeadingBox
                         , hidden False
                         , (Decode.map MsgInitHeadingChanged targetValue) |> on "input"
@@ -1960,7 +1977,6 @@ view model =
                 ]
             ]
         ]
-
 
 
 -- 根のブロックの描画
@@ -1997,25 +2013,12 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
 
         -- 追加
         -- touchstart
-        --, on "touchstart"
-          --  <| whenNotDragging model
-            --    <| Decode.map2
-              --      (\clientX clientY -> MsgStartDnD (x, y) (clientX, clientY))
-                --    (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
-                  --  (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
-
-        -- touchstart イベントの修正
         , on "touchstart"
-            <| Decode.map
-                (\touchList ->
-                    let
-                        touchCount = List.length touchList
-                        _ = Debug.log "Touches detected" touchCount
-                    in
-                    MsgUpdateTouchCount touchCount
-                )
-                (Decode.field "touches" (Decode.list Decode.value))
-
+            <| whenNotDragging model
+                <| Decode.map2
+                    (\clientX clientY -> MsgStartDnD (x, y) (clientX, clientY))
+                    (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
+                    (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
 
         --とりあえずブロックにタッチしたら複製できる
                 -- タッチイベントで複製をトリガー
