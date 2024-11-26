@@ -9838,7 +9838,7 @@ var $author$project$Main$init = function (_v0) {
 			routineNames: $elm$core$Set$fromList(
 				_List_fromArray(
 					['usagi', 'kuma'])),
-			touchCount: 0,
+			touchMessage: 'タッチしてみてください',
 			turtle: {avelocity: 0, callStack: _List_Nil, current: $author$project$Main$Nil, forward_remaining: 0, heading: 270, initHeading: 270, initX: 150, initY: 150, lines: _List_Nil, penState: $author$project$Main$Up, stack: _List_Nil, state: $author$project$Main$Done, turn_remaining: 0, variables: $elm$core$Dict$empty, velocity: 0, w: 32, wait_remaining: 0, x: 150, y: 150},
 			varNames: $elm$core$Set$empty
 		},
@@ -9847,10 +9847,11 @@ var $author$project$Main$init = function (_v0) {
 var $author$project$Main$MsgTick = function (a) {
 	return {$: 'MsgTick', a: a};
 };
-var $author$project$Main$MsgTouchCount = function (a) {
-	return {$: 'MsgTouchCount', a: a};
-};
 var $author$project$Main$Running = {$: 'Running'};
+var $author$project$Main$TouchEnd = {$: 'TouchEnd'};
+var $author$project$Main$TouchStart = function (a) {
+	return {$: 'TouchStart', a: a};
+};
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$browser$Browser$AnimationManager$Delta = function (a) {
 	return {$: 'Delta', a: a};
@@ -9981,15 +9982,22 @@ var $elm$browser$Browser$AnimationManager$onAnimationFrameDelta = function (tagg
 		$elm$browser$Browser$AnimationManager$Delta(tagger));
 };
 var $elm$browser$Browser$Events$onAnimationFrameDelta = $elm$browser$Browser$AnimationManager$onAnimationFrameDelta;
+var $elm$json$Json$Decode$null = _Json_decodeNull;
+var $author$project$Main$touchEnd = _Platform_incomingPort(
+	'touchEnd',
+	$elm$json$Json$Decode$null(_Utils_Tuple0));
 var $elm$json$Json$Decode$int = _Json_decodeInt;
-var $author$project$Main$touchCount = _Platform_incomingPort('touchCount', $elm$json$Json$Decode$int);
+var $author$project$Main$touchStart = _Platform_incomingPort('touchStart', $elm$json$Json$Decode$int);
 var $author$project$Main$subscriptions = function (model) {
-	return _Utils_eq(model.turtle.state, $author$project$Main$Running) ? $elm$core$Platform$Sub$batch(
+	return _Utils_eq(model.turtle.state, $author$project$Main$Running) ? $elm$browser$Browser$Events$onAnimationFrameDelta($author$project$Main$MsgTick) : $elm$core$Platform$Sub$batch(
 		_List_fromArray(
 			[
-				$elm$browser$Browser$Events$onAnimationFrameDelta($author$project$Main$MsgTick),
-				$author$project$Main$touchCount($author$project$Main$MsgTouchCount)
-			])) : $author$project$Main$touchCount($author$project$Main$MsgTouchCount);
+				$author$project$Main$touchStart($author$project$Main$TouchStart),
+				$author$project$Main$touchEnd(
+				function (_v0) {
+					return $author$project$Main$TouchEnd;
+				})
+			]));
 };
 var $author$project$Main$ASTxy = F2(
 	function (a, b) {
@@ -10878,7 +10886,6 @@ var $author$project$Main$nodeDecode = A4(
 	A2($elm$json$Json$Decode$field, 'getBrickType', $author$project$Main$brickTypeDecode),
 	A2($elm$json$Json$Decode$field, 'getBrickCommand', $author$project$Main$brickCommandDecode),
 	A2($elm$json$Json$Decode$field, 'getText', $author$project$Main$textDecode));
-var $elm$json$Json$Decode$null = _Json_decodeNull;
 var $elm$json$Json$Decode$oneOf = _Json_oneOf;
 function $author$project$Main$cyclic$astDecode() {
 	return $elm$json$Json$Decode$oneOf(
@@ -12750,23 +12757,39 @@ var $author$project$Main$update = F2(
 				return _Utils_Tuple2(
 					A2($author$project$Main$cloneUs, ast, model),
 					$elm$core$Platform$Cmd$none);
+			case 'TouchStart':
+				var count = msg.a;
+				var message = function () {
+					switch (count) {
+						case 1:
+							return '1本のタッチを検出しました！';
+						case 2:
+							return '2本のタッチを検出しました！';
+						default:
+							return $elm$core$String$fromInt(count) + '本のタッチを検出しました！';
+					}
+				}();
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{touchMessage: message}),
+					$elm$core$Platform$Cmd$none);
+			case 'TouchEnd':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{touchMessage: 'タッチが終了しました！'}),
+					$elm$core$Platform$Cmd$none);
 			case 'MsgStartDnD':
 				var rootXY = msg.a;
 				var mouseXY = msg.b;
 				return _Utils_Tuple2(
 					A3($author$project$Main$startDnD, rootXY, mouseXY, model),
 					$elm$core$Platform$Cmd$none);
-			case 'MsgTouchCount':
-				var count = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{touchCount: count}),
-					$elm$core$Platform$Cmd$none);
 			case 'MsgLetMeRoot':
-				var _v1 = msg.a;
-				var rootXY = _v1.a;
-				var ast = _v1.b;
+				var _v2 = msg.a;
+				var rootXY = _v2.a;
+				var ast = _v2.b;
 				var mouseXY = msg.b;
 				return _Utils_Tuple2(
 					A3(
@@ -12784,9 +12807,9 @@ var $author$project$Main$update = F2(
 					A2($author$project$Main$moveUs, mouseXY, model),
 					$elm$core$Platform$Cmd$none);
 			case 'MsgAttachMe':
-				var _v2 = msg.a;
-				var rootXY = _v2.a;
-				var ast = _v2.b;
+				var _v3 = msg.a;
+				var rootXY = _v3.a;
+				var ast = _v3.b;
 				return _Utils_Tuple2(
 					A2(
 						$author$project$Main$attachMe,
@@ -14432,14 +14455,6 @@ var $author$project$Main$view = function (model) {
 			[
 				A2(
 				$elm$html$Html$div,
-				_List_Nil,
-				_List_fromArray(
-					[
-						$elm$html$Html$text(
-						'Touch count: ' + $elm$core$String$fromInt(model.touchCount))
-					])),
-				A2(
-				$elm$html$Html$div,
 				_List_fromArray(
 					[
 						$elm$html$Html$Attributes$class('column is-one-quarter'),
@@ -14485,6 +14500,16 @@ var $author$project$Main$view = function (model) {
 								A2($author$project$Main$viewASTRoot, model, astxy));
 						}),
 					model.getASTRoots)),
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						A2($elm$html$Html$Attributes$style, 'margin-top', '10px')
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text(model.touchMessage)
+					])),
 				A2(
 				$elm$html$Html$div,
 				_List_fromArray(
@@ -14652,4 +14677,4 @@ var $author$project$Main$view = function (model) {
 var $author$project$Main$main = $elm$browser$Browser$element(
 	{init: $author$project$Main$init, subscriptions: $author$project$Main$subscriptions, update: $author$project$Main$update, view: $author$project$Main$view});
 _Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Main.Magnitude":{"args":[],"type":"Basics.Float"},"Main.Node":{"args":[],"type":"{ getBrickType : Main.BrickType, getBrickCommand : Main.BrickCommand, getText : Main.Text }"},"Main.Position":{"args":[],"type":"( Main.Magnitude, Main.Magnitude )"}},"unions":{"Main.Msg":{"args":[],"tags":{"MsgCloneUs":["Main.ASTxy Main.Node"],"MsgLetMeRoot":["Main.ASTxy Main.Node","Main.Position"],"MsgMoveUs":["Main.Position"],"MsgAttachMe":["Main.ASTxy Main.Node"],"MsgStartDnD":["Main.Position","Main.Position"],"MsgTouchCount":["Basics.Int"],"MsgInputChanged":["Main.Position","Basics.Int","String.String"],"MsgCheckString":["Main.Position","Basics.Int","String.String"],"MsgSetVarNames":[],"MsgRoutineBoxChanged":["String.String"],"MsgMakeNewRoutine":[],"MsgInitXChanged":["String.String"],"MsgInitYChanged":["String.String"],"MsgInitHeadingChanged":["String.String"],"MsgInitXBlur":[],"MsgInitYBlur":[],"MsgInitHeadingBlur":[],"MsgDblClick":[],"MsgTick":["Basics.Float"],"MsgRun":[],"MsgDownload":[],"MsgRequested":[],"MsgSelected":["File.File"],"MsgLoaded":["String.String"],"MsgNOP":[]}},"Main.ASTxy":{"args":["a"],"tags":{"ASTxy":["Main.Position","Main.ASTne a"]}},"Main.BrickCommand":{"args":[],"tags":{"CommandNOP":[],"CommandCalc":[],"CommandPop":[],"CommandPush":[],"CommandPenDown":[],"CommandPenUp":[],"CommandInit":[],"CommandToioWait":[],"CommandToioMoveForward":[],"CommandToioMoveBackward":[],"CommandToioTurnLeft":[],"CommandToioTurnRight":[],"CommandToioStopMoving":[],"CommandToioPlayPresetSound":[],"CommandToioStopPlaying":[],"CommandToioTurnOnLED_Red":[],"CommandToioTurnOnLED_Blue":[],"CommandToioTurnOnLED_Green":[],"CommandToioTurnOffLED":[]}},"Main.BrickType":{"args":[],"tags":{"BasicBrick":[],"EntryBrick":[],"CallBrick":[],"CaseBrick":[],"SpacerBrick":[]}},"File.File":{"args":[],"tags":{"File":[]}},"Basics.Float":{"args":[],"tags":{"Float":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"String.String":{"args":[],"tags":{"String":[]}},"Main.Text":{"args":[],"tags":{"Name":["String.String"],"Param":["String.String"],"Pen":["Main.PenState"],"Push":["String.String"],"Pop":["String.String"],"Init":["String.String","String.String"],"Calc":["String.String","String.String","Main.Operator","String.String"],"Cond":["String.String","Main.Comparator","String.String"],"Space":["String.String"]}},"Main.ASTne":{"args":["a"],"tags":{"ASTne":["a","Main.AST a","Main.AST a"]}},"Main.Comparator":{"args":[],"tags":{"Eq":[],"Ne":[],"Gt":[],"Lt":[],"Ge":[],"Le":[]}},"Main.Operator":{"args":[],"tags":{"Add":[],"Sub":[],"Mul":[],"Div":[],"Quotient":[],"Mod":[]}},"Main.PenState":{"args":[],"tags":{"Up":[],"Down":[]}},"Main.AST":{"args":["a"],"tags":{"Nil":[],"AST":["a","Main.AST a","Main.AST a"]}}}}})}});}(this));
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Main.Magnitude":{"args":[],"type":"Basics.Float"},"Main.Node":{"args":[],"type":"{ getBrickType : Main.BrickType, getBrickCommand : Main.BrickCommand, getText : Main.Text }"},"Main.Position":{"args":[],"type":"( Main.Magnitude, Main.Magnitude )"}},"unions":{"Main.Msg":{"args":[],"tags":{"MsgCloneUs":["Main.ASTxy Main.Node"],"MsgLetMeRoot":["Main.ASTxy Main.Node","Main.Position"],"MsgMoveUs":["Main.Position"],"MsgAttachMe":["Main.ASTxy Main.Node"],"MsgStartDnD":["Main.Position","Main.Position"],"MsgInputChanged":["Main.Position","Basics.Int","String.String"],"MsgCheckString":["Main.Position","Basics.Int","String.String"],"MsgSetVarNames":[],"MsgRoutineBoxChanged":["String.String"],"MsgMakeNewRoutine":[],"MsgInitXChanged":["String.String"],"MsgInitYChanged":["String.String"],"MsgInitHeadingChanged":["String.String"],"MsgInitXBlur":[],"MsgInitYBlur":[],"MsgInitHeadingBlur":[],"MsgDblClick":[],"MsgTick":["Basics.Float"],"MsgRun":[],"MsgDownload":[],"MsgRequested":[],"MsgSelected":["File.File"],"MsgLoaded":["String.String"],"MsgNOP":[],"TouchStart":["Basics.Int"],"TouchEnd":[]}},"Main.ASTxy":{"args":["a"],"tags":{"ASTxy":["Main.Position","Main.ASTne a"]}},"Main.BrickCommand":{"args":[],"tags":{"CommandNOP":[],"CommandCalc":[],"CommandPop":[],"CommandPush":[],"CommandPenDown":[],"CommandPenUp":[],"CommandInit":[],"CommandToioWait":[],"CommandToioMoveForward":[],"CommandToioMoveBackward":[],"CommandToioTurnLeft":[],"CommandToioTurnRight":[],"CommandToioStopMoving":[],"CommandToioPlayPresetSound":[],"CommandToioStopPlaying":[],"CommandToioTurnOnLED_Red":[],"CommandToioTurnOnLED_Blue":[],"CommandToioTurnOnLED_Green":[],"CommandToioTurnOffLED":[]}},"Main.BrickType":{"args":[],"tags":{"BasicBrick":[],"EntryBrick":[],"CallBrick":[],"CaseBrick":[],"SpacerBrick":[]}},"File.File":{"args":[],"tags":{"File":[]}},"Basics.Float":{"args":[],"tags":{"Float":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"String.String":{"args":[],"tags":{"String":[]}},"Main.Text":{"args":[],"tags":{"Name":["String.String"],"Param":["String.String"],"Pen":["Main.PenState"],"Push":["String.String"],"Pop":["String.String"],"Init":["String.String","String.String"],"Calc":["String.String","String.String","Main.Operator","String.String"],"Cond":["String.String","Main.Comparator","String.String"],"Space":["String.String"]}},"Main.ASTne":{"args":["a"],"tags":{"ASTne":["a","Main.AST a","Main.AST a"]}},"Main.Comparator":{"args":[],"tags":{"Eq":[],"Ne":[],"Gt":[],"Lt":[],"Ge":[],"Le":[]}},"Main.Operator":{"args":[],"tags":{"Add":[],"Sub":[],"Mul":[],"Div":[],"Quotient":[],"Mod":[]}},"Main.PenState":{"args":[],"tags":{"Up":[],"Down":[]}},"Main.AST":{"args":["a"],"tags":{"Nil":[],"AST":["a","Main.AST a","Main.AST a"]}}}}})}});}(this));

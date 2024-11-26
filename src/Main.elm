@@ -40,7 +40,8 @@ main =
 
 --port sendAST : Encode.Value -> Cmd msg
 port sendArray : Encode.Value -> Cmd msg
-port touchCount : (Int -> msg) -> Sub msg
+port touchStart : (Int -> msg) -> Sub msg
+port touchEnd : (() -> msg) -> Sub msg
 
 -- MODEL
 
@@ -198,7 +199,7 @@ type alias Model =
     , initYBox : String         -- タートルの初期位置のy座標を入力するボックス
     , initHeadingBox : String   -- タートルの初期方向を入力するボックス
     , turtle : Turtle
-    , touchCount : Int
+    , touchMessage : String -- タッチ数を表示するためのメッセージ
     }
 
 
@@ -340,7 +341,7 @@ init _ =
       , initXBox = "150"
       , initYBox = "150"
       , initHeadingBox = "270"
-      , touchCount = 0
+      , touchMessage = "タッチしてみてください"
       , turtle = 
           { x = 150
           , y = 150
@@ -372,13 +373,11 @@ init _ =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     if model.turtle.state == Running then
-        Sub.batch
-            [ onAnimationFrameDelta MsgTick
-            , touchCount MsgTouchCount -- タッチ数のポートを追加
-            ]
-    else
-        touchCount MsgTouchCount -- タートルが停止している場合でもタッチ数を監視
-
+        onAnimationFrameDelta MsgTick
+    else Sub.batch
+        [ touchStart TouchStart
+        , touchEnd (\_ -> TouchEnd)
+        ]
 
 
 -- UPDATE
@@ -390,7 +389,6 @@ type Msg
     | MsgMoveUs Position
     | MsgAttachMe (ASTxy Node)
     | MsgStartDnD Position Position
-    | MsgTouchCount Int
     | MsgInputChanged Position Int String
     | MsgCheckString  Position Int String
     | MsgSetVarNames -- 全ての変数名を取得
@@ -410,6 +408,8 @@ type Msg
     | MsgSelected File
     | MsgLoaded String
     | MsgNOP
+    | TouchStart Int -- タッチ数
+    | TouchEnd       -- タッチが終了したことを通知
 
 
 -- 指定したルーチンを取得する関数
@@ -465,10 +465,19 @@ update msg model =
     case msg of
         MsgCloneUs ast ->
             ( cloneUs ast model, Cmd.none )
+        TouchStart count ->
+            let
+                message =
+                    case count of
+                        1 -> "1本のタッチを検出しました！"
+                        2 -> "2本のタッチを検出しました！"
+                        _ -> String.fromInt count ++ "本のタッチを検出しました！"
+            in
+            ( { model | touchMessage = message }, Cmd.none )
+        TouchEnd ->
+            ( { model | touchMessage = "タッチが終了しました！" }, Cmd.none )
         MsgStartDnD rootXY mouseXY ->
             ( startDnD rootXY mouseXY model, Cmd.none )
-        MsgTouchCount count ->
-            ( { model | touchCount = count }, Cmd.none )
         MsgLetMeRoot (ASTxy rootXY ast) mouseXY ->
             ( model |> letMeRoot (ASTxy rootXY ast) |> startDnD rootXY mouseXY, Cmd.none )
         MsgMoveUs mouseXY ->
@@ -1836,13 +1845,18 @@ view model =
     div
         [ class "columns"
         -- mousemove
+        -- mousemoveイベントはフォーカスされたブロックではなくviewのルートで捕獲
+        -- このほうが激しくムーブしてポインタがブロックからはずれたときにも正しく動く
+        -- 寺尾くんがゼミBで発見したアイデアを採用
+        -- ブロック表面の画像だけがドラッグされないようにpreventDefaultが必要
         , preventDefaultOn "mousemove"
-            <| whenDragging model
-                <| Decode.map2
-                       (\pageX pageY -> MsgMoveUs (pageX, pageY))
-                       (Decode.field "pageX" Decode.float)
-                       (Decode.field "pageY" Decode.float)
+              <| whenDragging model
+                  <| Decode.map2
+                         (\pageX pageY -> MsgMoveUs ( pageX, pageY ))
+                         (Decode.field "pageX" Decode.float)
+                         (Decode.field "pageY" Decode.float)
 
+        -- 追加
         -- touchmove
         , preventDefaultOn "touchmove"
             <| whenDragging model
@@ -1850,23 +1864,25 @@ view model =
                     (\clientX clientY -> MsgMoveUs (clientX, clientY))
                     (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
                     (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
-        ]
-        [ -- Touch count の表示
-          div [] [ text ("Touch count: " ++ String.fromInt model.touchCount) ]
 
-          -- 既存のビュー要素
-        , div
+        
+        ]
+        [ div
             [ class "column is-one-quarter"
             , style "background-color" "orange"
             ]
             [ div
-                [ style "height" "3000px" ] []
+                [ style "height" "3000px" ]  -- "100%"ではだめ
+                []
             , Keyed.node "div"
                 []
                 (pallet
                     |> List.map createNewRoot
                     |> List.indexedMap
-                        (\index astxy -> (String.fromInt index, viewASTRoot model astxy))
+                        (\index astxy -> ( String.fromInt index
+                                         , viewASTRoot model astxy
+                                         )
+                        )
                 )
             ]
         , Keyed.node "div"
@@ -1875,13 +1891,17 @@ view model =
             ]
             (model.getASTRoots
                 |> List.indexedMap
-                    (\index astxy -> (String.fromInt index, viewASTRoot model astxy))
+                    (\index astxy -> ( String.fromInt index
+                                     , viewASTRoot model astxy
+                                     )
+                    )
             )
+        , div [ style "margin-top" "10px" ] [ text model.touchMessage ]
         , div
             [ class "column is-one-quarter"
             , style "background-color" "skyblue"
             ]
-            [ div
+            [ div   -- このあたりは適当に設定している
                 [ style "position" "relative"
                 , style "top" "10px"
                 ]
