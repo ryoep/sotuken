@@ -9847,8 +9847,8 @@ var $author$project$Main$init = function (_v0) {
 var $author$project$Main$MsgTick = function (a) {
 	return {$: 'MsgTick', a: a};
 };
-var $author$project$Main$MsgTouchCountChanged = function (a) {
-	return {$: 'MsgTouchCountChanged', a: a};
+var $author$project$Main$MsgTouchCount = function (a) {
+	return {$: 'MsgTouchCount', a: a};
 };
 var $author$project$Main$Running = {$: 'Running'};
 var $elm$core$Platform$Sub$batch = _Platform_batch;
@@ -9982,18 +9982,14 @@ var $elm$browser$Browser$AnimationManager$onAnimationFrameDelta = function (tagg
 };
 var $elm$browser$Browser$Events$onAnimationFrameDelta = $elm$browser$Browser$AnimationManager$onAnimationFrameDelta;
 var $elm$json$Json$Decode$int = _Json_decodeInt;
-var $author$project$Main$touchCountChanged = _Platform_incomingPort('touchCountChanged', $elm$json$Json$Decode$int);
+var $author$project$Main$touchCount = _Platform_incomingPort('touchCount', $elm$json$Json$Decode$int);
 var $author$project$Main$subscriptions = function (model) {
-	return $elm$core$Platform$Sub$batch(
-		_Utils_ap(
-			_List_fromArray(
-				[
-					$author$project$Main$touchCountChanged($author$project$Main$MsgTouchCountChanged)
-				]),
-			_Utils_eq(model.turtle.state, $author$project$Main$Running) ? _List_fromArray(
-				[
-					$elm$browser$Browser$Events$onAnimationFrameDelta($author$project$Main$MsgTick)
-				]) : _List_Nil));
+	return _Utils_eq(model.turtle.state, $author$project$Main$Running) ? $elm$core$Platform$Sub$batch(
+		_List_fromArray(
+			[
+				$elm$browser$Browser$Events$onAnimationFrameDelta($author$project$Main$MsgTick),
+				$author$project$Main$touchCount($author$project$Main$MsgTouchCount)
+			])) : $author$project$Main$touchCount($author$project$Main$MsgTouchCount);
 };
 var $author$project$Main$ASTxy = F2(
 	function (a, b) {
@@ -12754,19 +12750,19 @@ var $author$project$Main$update = F2(
 				return _Utils_Tuple2(
 					A2($author$project$Main$cloneUs, ast, model),
 					$elm$core$Platform$Cmd$none);
-			case 'MsgTouchCountChanged':
+			case 'MsgStartDnD':
+				var rootXY = msg.a;
+				var mouseXY = msg.b;
+				return _Utils_Tuple2(
+					A3($author$project$Main$startDnD, rootXY, mouseXY, model),
+					$elm$core$Platform$Cmd$none);
+			case 'MsgTouchCount':
 				var count = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{touchCount: count}),
 					$elm$core$Platform$Cmd$none);
-			case 'MsgStartDnD':
-				var rootXY = msg.a;
-				var mouseXY = msg.b;
-				return (model.touchCount === 1) ? _Utils_Tuple2(
-					A3($author$project$Main$startDnD, rootXY, mouseXY, model),
-					$elm$core$Platform$Cmd$none) : ((model.touchCount === 2) ? _Utils_Tuple2(model, $elm$core$Platform$Cmd$none) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none));
 			case 'MsgLetMeRoot':
 				var _v1 = msg.a;
 				var rootXY = _v1.a;
@@ -12788,15 +12784,15 @@ var $author$project$Main$update = F2(
 					A2($author$project$Main$moveUs, mouseXY, model),
 					$elm$core$Platform$Cmd$none);
 			case 'MsgAttachMe':
-				var root = msg.a;
-				return (model.touchCount === 1) ? _Utils_Tuple2(
+				var _v2 = msg.a;
+				var rootXY = _v2.a;
+				var ast = _v2.b;
+				return _Utils_Tuple2(
 					A2(
 						$author$project$Main$attachMe,
-						root,
-						A2($author$project$Main$stopDnD, model.getDnDInfo.getRootXY, model)),
-					$elm$core$Platform$Cmd$none) : ((model.touchCount === 2) ? _Utils_Tuple2(
-					A2($author$project$Main$cloneUs, root, model),
-					$elm$core$Platform$Cmd$none) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none));
+						A2($author$project$Main$ASTxy, rootXY, ast),
+						A2($author$project$Main$stopDnD, rootXY, model)),
+					$elm$core$Platform$Cmd$none);
 			case 'MsgInputChanged':
 				var xy = msg.a;
 				var place = msg.b;
@@ -14436,6 +14432,14 @@ var $author$project$Main$view = function (model) {
 			[
 				A2(
 				$elm$html$Html$div,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text(
+						'Touch count: ' + $elm$core$String$fromInt(model.touchCount))
+					])),
+				A2(
+				$elm$html$Html$div,
 				_List_fromArray(
 					[
 						$elm$html$Html$Attributes$class('column is-one-quarter'),
@@ -14542,7 +14546,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('アモリム'),
+												$elm$html$Html$Attributes$placeholder('マーカス'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(
@@ -14648,4 +14652,4 @@ var $author$project$Main$view = function (model) {
 var $author$project$Main$main = $elm$browser$Browser$element(
 	{init: $author$project$Main$init, subscriptions: $author$project$Main$subscriptions, update: $author$project$Main$update, view: $author$project$Main$view});
 _Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Main.Magnitude":{"args":[],"type":"Basics.Float"},"Main.Node":{"args":[],"type":"{ getBrickType : Main.BrickType, getBrickCommand : Main.BrickCommand, getText : Main.Text }"},"Main.Position":{"args":[],"type":"( Main.Magnitude, Main.Magnitude )"}},"unions":{"Main.Msg":{"args":[],"tags":{"MsgCloneUs":["Main.ASTxy Main.Node"],"MsgLetMeRoot":["Main.ASTxy Main.Node","Main.Position"],"MsgTouchCountChanged":["Basics.Int"],"MsgMoveUs":["Main.Position"],"MsgAttachMe":["Main.ASTxy Main.Node"],"MsgStartDnD":["Main.Position","Main.Position"],"MsgInputChanged":["Main.Position","Basics.Int","String.String"],"MsgCheckString":["Main.Position","Basics.Int","String.String"],"MsgSetVarNames":[],"MsgRoutineBoxChanged":["String.String"],"MsgMakeNewRoutine":[],"MsgInitXChanged":["String.String"],"MsgInitYChanged":["String.String"],"MsgInitHeadingChanged":["String.String"],"MsgInitXBlur":[],"MsgInitYBlur":[],"MsgInitHeadingBlur":[],"MsgDblClick":[],"MsgTick":["Basics.Float"],"MsgRun":[],"MsgDownload":[],"MsgRequested":[],"MsgSelected":["File.File"],"MsgLoaded":["String.String"],"MsgNOP":[]}},"Main.ASTxy":{"args":["a"],"tags":{"ASTxy":["Main.Position","Main.ASTne a"]}},"Main.BrickCommand":{"args":[],"tags":{"CommandNOP":[],"CommandCalc":[],"CommandPop":[],"CommandPush":[],"CommandPenDown":[],"CommandPenUp":[],"CommandInit":[],"CommandToioWait":[],"CommandToioMoveForward":[],"CommandToioMoveBackward":[],"CommandToioTurnLeft":[],"CommandToioTurnRight":[],"CommandToioStopMoving":[],"CommandToioPlayPresetSound":[],"CommandToioStopPlaying":[],"CommandToioTurnOnLED_Red":[],"CommandToioTurnOnLED_Blue":[],"CommandToioTurnOnLED_Green":[],"CommandToioTurnOffLED":[]}},"Main.BrickType":{"args":[],"tags":{"BasicBrick":[],"EntryBrick":[],"CallBrick":[],"CaseBrick":[],"SpacerBrick":[]}},"File.File":{"args":[],"tags":{"File":[]}},"Basics.Float":{"args":[],"tags":{"Float":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"String.String":{"args":[],"tags":{"String":[]}},"Main.Text":{"args":[],"tags":{"Name":["String.String"],"Param":["String.String"],"Pen":["Main.PenState"],"Push":["String.String"],"Pop":["String.String"],"Init":["String.String","String.String"],"Calc":["String.String","String.String","Main.Operator","String.String"],"Cond":["String.String","Main.Comparator","String.String"],"Space":["String.String"]}},"Main.ASTne":{"args":["a"],"tags":{"ASTne":["a","Main.AST a","Main.AST a"]}},"Main.Comparator":{"args":[],"tags":{"Eq":[],"Ne":[],"Gt":[],"Lt":[],"Ge":[],"Le":[]}},"Main.Operator":{"args":[],"tags":{"Add":[],"Sub":[],"Mul":[],"Div":[],"Quotient":[],"Mod":[]}},"Main.PenState":{"args":[],"tags":{"Up":[],"Down":[]}},"Main.AST":{"args":["a"],"tags":{"Nil":[],"AST":["a","Main.AST a","Main.AST a"]}}}}})}});}(this));
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Main.Magnitude":{"args":[],"type":"Basics.Float"},"Main.Node":{"args":[],"type":"{ getBrickType : Main.BrickType, getBrickCommand : Main.BrickCommand, getText : Main.Text }"},"Main.Position":{"args":[],"type":"( Main.Magnitude, Main.Magnitude )"}},"unions":{"Main.Msg":{"args":[],"tags":{"MsgCloneUs":["Main.ASTxy Main.Node"],"MsgLetMeRoot":["Main.ASTxy Main.Node","Main.Position"],"MsgMoveUs":["Main.Position"],"MsgAttachMe":["Main.ASTxy Main.Node"],"MsgStartDnD":["Main.Position","Main.Position"],"MsgTouchCount":["Basics.Int"],"MsgInputChanged":["Main.Position","Basics.Int","String.String"],"MsgCheckString":["Main.Position","Basics.Int","String.String"],"MsgSetVarNames":[],"MsgRoutineBoxChanged":["String.String"],"MsgMakeNewRoutine":[],"MsgInitXChanged":["String.String"],"MsgInitYChanged":["String.String"],"MsgInitHeadingChanged":["String.String"],"MsgInitXBlur":[],"MsgInitYBlur":[],"MsgInitHeadingBlur":[],"MsgDblClick":[],"MsgTick":["Basics.Float"],"MsgRun":[],"MsgDownload":[],"MsgRequested":[],"MsgSelected":["File.File"],"MsgLoaded":["String.String"],"MsgNOP":[]}},"Main.ASTxy":{"args":["a"],"tags":{"ASTxy":["Main.Position","Main.ASTne a"]}},"Main.BrickCommand":{"args":[],"tags":{"CommandNOP":[],"CommandCalc":[],"CommandPop":[],"CommandPush":[],"CommandPenDown":[],"CommandPenUp":[],"CommandInit":[],"CommandToioWait":[],"CommandToioMoveForward":[],"CommandToioMoveBackward":[],"CommandToioTurnLeft":[],"CommandToioTurnRight":[],"CommandToioStopMoving":[],"CommandToioPlayPresetSound":[],"CommandToioStopPlaying":[],"CommandToioTurnOnLED_Red":[],"CommandToioTurnOnLED_Blue":[],"CommandToioTurnOnLED_Green":[],"CommandToioTurnOffLED":[]}},"Main.BrickType":{"args":[],"tags":{"BasicBrick":[],"EntryBrick":[],"CallBrick":[],"CaseBrick":[],"SpacerBrick":[]}},"File.File":{"args":[],"tags":{"File":[]}},"Basics.Float":{"args":[],"tags":{"Float":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"String.String":{"args":[],"tags":{"String":[]}},"Main.Text":{"args":[],"tags":{"Name":["String.String"],"Param":["String.String"],"Pen":["Main.PenState"],"Push":["String.String"],"Pop":["String.String"],"Init":["String.String","String.String"],"Calc":["String.String","String.String","Main.Operator","String.String"],"Cond":["String.String","Main.Comparator","String.String"],"Space":["String.String"]}},"Main.ASTne":{"args":["a"],"tags":{"ASTne":["a","Main.AST a","Main.AST a"]}},"Main.Comparator":{"args":[],"tags":{"Eq":[],"Ne":[],"Gt":[],"Lt":[],"Ge":[],"Le":[]}},"Main.Operator":{"args":[],"tags":{"Add":[],"Sub":[],"Mul":[],"Div":[],"Quotient":[],"Mod":[]}},"Main.PenState":{"args":[],"tags":{"Up":[],"Down":[]}},"Main.AST":{"args":["a"],"tags":{"Nil":[],"AST":["a","Main.AST a","Main.AST a"]}}}}})}});}(this));

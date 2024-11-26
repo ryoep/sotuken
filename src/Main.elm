@@ -25,7 +25,6 @@ import File.Download as Download
 import File.Select as Select
 
 
-
 main : Program () Model Msg
 main =
     Browser.element
@@ -41,7 +40,7 @@ main =
 
 --port sendAST : Encode.Value -> Cmd msg
 port sendArray : Encode.Value -> Cmd msg
-port touchCountChanged : (Int -> msg) -> Sub msg --追加
+port touchCount : (Int -> msg) -> Sub msg
 
 -- MODEL
 
@@ -192,7 +191,6 @@ type alias Model =
     { getBrickSize : Magnitude
     , getASTRoots : List (ASTxy Node)
     , getDnDInfo : DnDInfo
-    , touchCount : Int -- タッチ数を保持
     , varNames : Set String
     , routineNames : Set String -- ルーチン名のセット
     , routineBox : String       -- ルーチン名を入力するボックス
@@ -200,6 +198,7 @@ type alias Model =
     , initYBox : String         -- タートルの初期位置のy座標を入力するボックス
     , initHeadingBox : String   -- タートルの初期方向を入力するボックス
     , turtle : Turtle
+    , touchCount : Int
     }
 
 
@@ -341,6 +340,7 @@ init _ =
       , initXBox = "150"
       , initYBox = "150"
       , initHeadingBox = "270"
+      , touchCount = 0
       , turtle = 
           { x = 150
           , y = 150
@@ -362,7 +362,6 @@ init _ =
           , penState = Up
           , lines = []
           }
-      , touchCount = 0 -- 初期値を設定
       }
     , Cmd.none
     )
@@ -372,15 +371,13 @@ init _ =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch
-        ([ touchCountChanged MsgTouchCountChanged -- タッチ数の変化を監視するサブスクリプション
-         ]
-            ++
-         (if model.turtle.state == Running then
-            [ onAnimationFrameDelta MsgTick ] -- アニメーションフレームを監視する
-          else
-            [])
-        )
+    if model.turtle.state == Running then
+        Sub.batch
+            [ onAnimationFrameDelta MsgTick
+            , touchCount MsgTouchCount -- タッチ数のポートを追加
+            ]
+    else
+        touchCount MsgTouchCount -- タートルが停止している場合でもタッチ数を監視
 
 
 
@@ -390,10 +387,10 @@ subscriptions model =
 type Msg
     = MsgCloneUs (ASTxy Node)
     | MsgLetMeRoot (ASTxy Node) Position
-    | MsgTouchCountChanged Int --追加
     | MsgMoveUs Position
     | MsgAttachMe (ASTxy Node)
     | MsgStartDnD Position Position
+    | MsgTouchCount Int
     | MsgInputChanged Position Int String
     | MsgCheckString  Position Int String
     | MsgSetVarNames -- 全ての変数名を取得
@@ -468,30 +465,16 @@ update msg model =
     case msg of
         MsgCloneUs ast ->
             ( cloneUs ast model, Cmd.none )
-        MsgTouchCountChanged count -> --追加
-            ( { model | touchCount = count }, Cmd.none )
-        --MsgStartDnD rootXY mouseXY ->
-          --  ( startDnD rootXY mouseXY model, Cmd.none )
         MsgStartDnD rootXY mouseXY ->
-            if model.touchCount == 1 then
-                ( startDnD rootXY mouseXY model, Cmd.none ) -- 1本指でドラッグ
-            else if model.touchCount == 2 then
-                ( model, Cmd.none ) -- 2本指の場合は何もしない（後で複製をトリガー）
-            else
-                ( model, Cmd.none )
+            ( startDnD rootXY mouseXY model, Cmd.none )
+        MsgTouchCount count ->
+            ( { model | touchCount = count }, Cmd.none )
         MsgLetMeRoot (ASTxy rootXY ast) mouseXY ->
             ( model |> letMeRoot (ASTxy rootXY ast) |> startDnD rootXY mouseXY, Cmd.none )
         MsgMoveUs mouseXY ->
             ( moveUs mouseXY model, Cmd.none )
-        --MsgAttachMe (ASTxy rootXY ast) ->
-          --  ( model |> stopDnD rootXY |> attachMe (ASTxy rootXY ast), Cmd.none )
-        MsgAttachMe root ->
-            if model.touchCount == 1 then
-                (model |> stopDnD model.getDnDInfo.getRootXY |> attachMe root, Cmd.none)
-            else if model.touchCount == 2 then
-                ( cloneUs root model, Cmd.none ) -- 2本指で複製
-            else
-                ( model, Cmd.none )
+        MsgAttachMe (ASTxy rootXY ast) ->
+            ( model |> stopDnD rootXY |> attachMe (ASTxy rootXY ast), Cmd.none )
         MsgInputChanged xy place text ->
             ( modifyText modifyTextData   xy place text model, Cmd.none )
         MsgCheckString xy place text ->
@@ -1853,18 +1836,13 @@ view model =
     div
         [ class "columns"
         -- mousemove
-        -- mousemoveイベントはフォーカスされたブロックではなくviewのルートで捕獲
-        -- このほうが激しくムーブしてポインタがブロックからはずれたときにも正しく動く
-        -- 寺尾くんがゼミBで発見したアイデアを採用
-        -- ブロック表面の画像だけがドラッグされないようにpreventDefaultが必要
         , preventDefaultOn "mousemove"
-              <| whenDragging model
-                  <| Decode.map2
-                         (\pageX pageY -> MsgMoveUs ( pageX, pageY ))
-                         (Decode.field "pageX" Decode.float)
-                         (Decode.field "pageY" Decode.float)
+            <| whenDragging model
+                <| Decode.map2
+                       (\pageX pageY -> MsgMoveUs (pageX, pageY))
+                       (Decode.field "pageX" Decode.float)
+                       (Decode.field "pageY" Decode.float)
 
-        -- 追加
         -- touchmove
         , preventDefaultOn "touchmove"
             <| whenDragging model
@@ -1872,25 +1850,23 @@ view model =
                     (\clientX clientY -> MsgMoveUs (clientX, clientY))
                     (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
                     (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
-
-        
         ]
-        [ div
+        [ -- Touch count の表示
+          div [] [ text ("Touch count: " ++ String.fromInt model.touchCount) ]
+
+          -- 既存のビュー要素
+        , div
             [ class "column is-one-quarter"
             , style "background-color" "orange"
             ]
             [ div
-                [ style "height" "3000px" ]  -- "100%"ではだめ
-                []
+                [ style "height" "3000px" ] []
             , Keyed.node "div"
                 []
                 (pallet
                     |> List.map createNewRoot
                     |> List.indexedMap
-                        (\index astxy -> ( String.fromInt index
-                                         , viewASTRoot model astxy
-                                         )
-                        )
+                        (\index astxy -> (String.fromInt index, viewASTRoot model astxy))
                 )
             ]
         , Keyed.node "div"
@@ -1899,16 +1875,13 @@ view model =
             ]
             (model.getASTRoots
                 |> List.indexedMap
-                    (\index astxy -> ( String.fromInt index
-                                     , viewASTRoot model astxy
-                                     )
-                    )
+                    (\index astxy -> (String.fromInt index, viewASTRoot model astxy))
             )
         , div
             [ class "column is-one-quarter"
             , style "background-color" "skyblue"
             ]
-            [ div   -- このあたりは適当に設定している
+            [ div
                 [ style "position" "relative"
                 , style "top" "10px"
                 ]
@@ -1926,7 +1899,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "アモリム" --新しい関数名
+                        , placeholder "マーカス" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
