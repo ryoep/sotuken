@@ -9838,6 +9838,7 @@ var $author$project$Main$init = function (_v0) {
 			routineNames: $elm$core$Set$fromList(
 				_List_fromArray(
 					['usagi', 'kuma'])),
+			touchCount: 0,
 			turtle: {avelocity: 0, callStack: _List_Nil, current: $author$project$Main$Nil, forward_remaining: 0, heading: 270, initHeading: 270, initX: 150, initY: 150, lines: _List_Nil, penState: $author$project$Main$Up, stack: _List_Nil, state: $author$project$Main$Done, turn_remaining: 0, variables: $elm$core$Dict$empty, velocity: 0, w: 32, wait_remaining: 0, x: 150, y: 150},
 			varNames: $elm$core$Set$empty
 		},
@@ -9847,6 +9848,9 @@ var $author$project$Main$MsgTick = function (a) {
 	return {$: 'MsgTick', a: a};
 };
 var $author$project$Main$Running = {$: 'Running'};
+var $author$project$Main$UpdateTouchCount = function (a) {
+	return {$: 'UpdateTouchCount', a: a};
+};
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $elm$browser$Browser$AnimationManager$Delta = function (a) {
@@ -9978,8 +9982,15 @@ var $elm$browser$Browser$AnimationManager$onAnimationFrameDelta = function (tagg
 		$elm$browser$Browser$AnimationManager$Delta(tagger));
 };
 var $elm$browser$Browser$Events$onAnimationFrameDelta = $elm$browser$Browser$AnimationManager$onAnimationFrameDelta;
+var $elm$json$Json$Decode$int = _Json_decodeInt;
+var $author$project$Main$receiveTouchCount = _Platform_incomingPort('receiveTouchCount', $elm$json$Json$Decode$int);
 var $author$project$Main$subscriptions = function (model) {
-	return _Utils_eq(model.turtle.state, $author$project$Main$Running) ? $elm$browser$Browser$Events$onAnimationFrameDelta($author$project$Main$MsgTick) : $elm$core$Platform$Sub$none;
+	return $elm$core$Platform$Sub$batch(
+		_List_fromArray(
+			[
+				$author$project$Main$receiveTouchCount($author$project$Main$UpdateTouchCount),
+				_Utils_eq(model.turtle.state, $author$project$Main$Running) ? $elm$browser$Browser$Events$onAnimationFrameDelta($author$project$Main$MsgTick) : $elm$core$Platform$Sub$none
+			]));
 };
 var $author$project$Main$ASTxy = F2(
 	function (a, b) {
@@ -12740,6 +12751,13 @@ var $author$project$Main$update = F2(
 				return _Utils_Tuple2(
 					A2($author$project$Main$cloneUs, ast, model),
 					$elm$core$Platform$Cmd$none);
+			case 'UpdateTouchCount':
+				var count = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{touchCount: count}),
+					$elm$core$Platform$Cmd$none);
 			case 'MsgStartDnD':
 				var rootXY = msg.a;
 				var mouseXY = msg.b;
@@ -14002,7 +14020,6 @@ var $author$project$Main$viewBrick = F3(
 				}()
 				]));
 	});
-var $elm$json$Json$Decode$int = _Json_decodeInt;
 var $elm_community$json_extra$Json$Decode$Extra$when = F3(
 	function (checkDecoder, check, passDecoder) {
 		return A2(
@@ -14474,6 +14491,17 @@ var $author$project$Main$view = function (model) {
 						$elm$html$Html$div,
 						_List_fromArray(
 							[
+								$elm$html$Html$Attributes$class('notification is-info')
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text(
+								'現在のタッチ数: ' + $elm$core$String$fromInt(model.touchCount))
+							])),
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
 								A2($elm$html$Html$Attributes$style, 'position', 'relative'),
 								A2($elm$html$Html$Attributes$style, 'top', '10px')
 							]),
@@ -14602,7 +14630,7 @@ var $author$project$Main$view = function (model) {
 								_List_Nil,
 								_List_fromArray(
 									[
-										$elm$html$Html$text('さいしょの向き \u00A0\u00A0: '),
+										$elm$html$Html$text('さいしょの向き : '),
 										A2(
 										$elm$html$Html$input,
 										_List_fromArray(
@@ -14628,4 +14656,4 @@ var $author$project$Main$view = function (model) {
 var $author$project$Main$main = $elm$browser$Browser$element(
 	{init: $author$project$Main$init, subscriptions: $author$project$Main$subscriptions, update: $author$project$Main$update, view: $author$project$Main$view});
 _Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Main.Magnitude":{"args":[],"type":"Basics.Float"},"Main.Node":{"args":[],"type":"{ getBrickType : Main.BrickType, getBrickCommand : Main.BrickCommand, getText : Main.Text }"},"Main.Position":{"args":[],"type":"( Main.Magnitude, Main.Magnitude )"}},"unions":{"Main.Msg":{"args":[],"tags":{"MsgCloneUs":["Main.ASTxy Main.Node"],"MsgLetMeRoot":["Main.ASTxy Main.Node","Main.Position"],"MsgMoveUs":["Main.Position"],"MsgAttachMe":["Main.ASTxy Main.Node"],"MsgStartDnD":["Main.Position","Main.Position"],"MsgInputChanged":["Main.Position","Basics.Int","String.String"],"MsgCheckString":["Main.Position","Basics.Int","String.String"],"MsgSetVarNames":[],"MsgRoutineBoxChanged":["String.String"],"MsgMakeNewRoutine":[],"MsgInitXChanged":["String.String"],"MsgInitYChanged":["String.String"],"MsgInitHeadingChanged":["String.String"],"MsgInitXBlur":[],"MsgInitYBlur":[],"MsgInitHeadingBlur":[],"MsgDblClick":[],"MsgTick":["Basics.Float"],"MsgRun":[],"MsgDownload":[],"MsgRequested":[],"MsgSelected":["File.File"],"MsgLoaded":["String.String"],"MsgNOP":[]}},"Main.ASTxy":{"args":["a"],"tags":{"ASTxy":["Main.Position","Main.ASTne a"]}},"Main.BrickCommand":{"args":[],"tags":{"CommandNOP":[],"CommandCalc":[],"CommandPop":[],"CommandPush":[],"CommandPenDown":[],"CommandPenUp":[],"CommandInit":[],"CommandToioWait":[],"CommandToioMoveForward":[],"CommandToioMoveBackward":[],"CommandToioTurnLeft":[],"CommandToioTurnRight":[],"CommandToioStopMoving":[],"CommandToioPlayPresetSound":[],"CommandToioStopPlaying":[],"CommandToioTurnOnLED_Red":[],"CommandToioTurnOnLED_Blue":[],"CommandToioTurnOnLED_Green":[],"CommandToioTurnOffLED":[]}},"Main.BrickType":{"args":[],"tags":{"BasicBrick":[],"EntryBrick":[],"CallBrick":[],"CaseBrick":[],"SpacerBrick":[]}},"File.File":{"args":[],"tags":{"File":[]}},"Basics.Float":{"args":[],"tags":{"Float":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"String.String":{"args":[],"tags":{"String":[]}},"Main.Text":{"args":[],"tags":{"Name":["String.String"],"Param":["String.String"],"Pen":["Main.PenState"],"Push":["String.String"],"Pop":["String.String"],"Init":["String.String","String.String"],"Calc":["String.String","String.String","Main.Operator","String.String"],"Cond":["String.String","Main.Comparator","String.String"],"Space":["String.String"]}},"Main.ASTne":{"args":["a"],"tags":{"ASTne":["a","Main.AST a","Main.AST a"]}},"Main.Comparator":{"args":[],"tags":{"Eq":[],"Ne":[],"Gt":[],"Lt":[],"Ge":[],"Le":[]}},"Main.Operator":{"args":[],"tags":{"Add":[],"Sub":[],"Mul":[],"Div":[],"Quotient":[],"Mod":[]}},"Main.PenState":{"args":[],"tags":{"Up":[],"Down":[]}},"Main.AST":{"args":["a"],"tags":{"Nil":[],"AST":["a","Main.AST a","Main.AST a"]}}}}})}});}(this));
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Main.Magnitude":{"args":[],"type":"Basics.Float"},"Main.Node":{"args":[],"type":"{ getBrickType : Main.BrickType, getBrickCommand : Main.BrickCommand, getText : Main.Text }"},"Main.Position":{"args":[],"type":"( Main.Magnitude, Main.Magnitude )"}},"unions":{"Main.Msg":{"args":[],"tags":{"MsgCloneUs":["Main.ASTxy Main.Node"],"MsgLetMeRoot":["Main.ASTxy Main.Node","Main.Position"],"MsgMoveUs":["Main.Position"],"MsgAttachMe":["Main.ASTxy Main.Node"],"MsgStartDnD":["Main.Position","Main.Position"],"MsgInputChanged":["Main.Position","Basics.Int","String.String"],"MsgCheckString":["Main.Position","Basics.Int","String.String"],"MsgSetVarNames":[],"MsgRoutineBoxChanged":["String.String"],"MsgMakeNewRoutine":[],"MsgInitXChanged":["String.String"],"MsgInitYChanged":["String.String"],"MsgInitHeadingChanged":["String.String"],"MsgInitXBlur":[],"MsgInitYBlur":[],"MsgInitHeadingBlur":[],"MsgDblClick":[],"MsgTick":["Basics.Float"],"MsgRun":[],"MsgDownload":[],"MsgRequested":[],"MsgSelected":["File.File"],"MsgLoaded":["String.String"],"MsgNOP":[],"UpdateTouchCount":["Basics.Int"]}},"Main.ASTxy":{"args":["a"],"tags":{"ASTxy":["Main.Position","Main.ASTne a"]}},"Main.BrickCommand":{"args":[],"tags":{"CommandNOP":[],"CommandCalc":[],"CommandPop":[],"CommandPush":[],"CommandPenDown":[],"CommandPenUp":[],"CommandInit":[],"CommandToioWait":[],"CommandToioMoveForward":[],"CommandToioMoveBackward":[],"CommandToioTurnLeft":[],"CommandToioTurnRight":[],"CommandToioStopMoving":[],"CommandToioPlayPresetSound":[],"CommandToioStopPlaying":[],"CommandToioTurnOnLED_Red":[],"CommandToioTurnOnLED_Blue":[],"CommandToioTurnOnLED_Green":[],"CommandToioTurnOffLED":[]}},"Main.BrickType":{"args":[],"tags":{"BasicBrick":[],"EntryBrick":[],"CallBrick":[],"CaseBrick":[],"SpacerBrick":[]}},"File.File":{"args":[],"tags":{"File":[]}},"Basics.Float":{"args":[],"tags":{"Float":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"String.String":{"args":[],"tags":{"String":[]}},"Main.Text":{"args":[],"tags":{"Name":["String.String"],"Param":["String.String"],"Pen":["Main.PenState"],"Push":["String.String"],"Pop":["String.String"],"Init":["String.String","String.String"],"Calc":["String.String","String.String","Main.Operator","String.String"],"Cond":["String.String","Main.Comparator","String.String"],"Space":["String.String"]}},"Main.ASTne":{"args":["a"],"tags":{"ASTne":["a","Main.AST a","Main.AST a"]}},"Main.Comparator":{"args":[],"tags":{"Eq":[],"Ne":[],"Gt":[],"Lt":[],"Ge":[],"Le":[]}},"Main.Operator":{"args":[],"tags":{"Add":[],"Sub":[],"Mul":[],"Div":[],"Quotient":[],"Mod":[]}},"Main.PenState":{"args":[],"tags":{"Up":[],"Down":[]}},"Main.AST":{"args":["a"],"tags":{"Nil":[],"AST":["a","Main.AST a","Main.AST a"]}}}}})}});}(this));

@@ -1,5 +1,6 @@
 port module Main exposing (..)
 
+
 import Browser
 import Browser.Events exposing (onAnimationFrameDelta)
 import Html exposing (Attribute, Html, div, img, input, a, i, text, select, option, datalist)
@@ -23,6 +24,8 @@ import Process exposing (..)
 import File exposing (File)
 import File.Download as Download
 import File.Select as Select
+
+port receiveTouchCount : (Int -> msg) -> Sub msg --追加
 
 main : Program () Model Msg
 main =
@@ -196,6 +199,7 @@ type alias Model =
     , initYBox : String         -- タートルの初期位置のy座標を入力するボックス
     , initHeadingBox : String   -- タートルの初期方向を入力するボックス
     , turtle : Turtle
+    , touchCount : Int  -- タッチ数を追加
     }
 
 
@@ -358,6 +362,7 @@ init _ =
           , penState = Up
           , lines = []
           }
+      , touchCount = 0  -- 初期値を設定
       }
     , Cmd.none
     )
@@ -365,11 +370,22 @@ init _ =
 -- SUBSCRIPTIONS
 
 
+--subscriptions : Model -> Sub Msg
+--subscriptions model =
+    --if model.turtle.state == Running then
+      --  onAnimationFrameDelta MsgTick
+    --else Sub.none
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    if model.turtle.state == Running then
-        onAnimationFrameDelta MsgTick
-    else Sub.none
+    Sub.batch
+        [ receiveTouchCount UpdateTouchCount -- タッチ数を受け取る
+        , if model.turtle.state == Running then
+            onAnimationFrameDelta MsgTick
+          else
+            Sub.none
+        ]
+
 
 
 -- UPDATE
@@ -400,6 +416,7 @@ type Msg
     | MsgSelected File
     | MsgLoaded String
     | MsgNOP
+    | UpdateTouchCount Int  -- タッチ数更新用
 
 
 -- 指定したルーチンを取得する関数
@@ -455,6 +472,8 @@ update msg model =
     case msg of
         MsgCloneUs ast ->
             ( cloneUs ast model, Cmd.none )
+        UpdateTouchCount count ->
+            ({ model | touchCount = count }, Cmd.none)
         MsgStartDnD rootXY mouseXY ->
             ( startDnD rootXY mouseXY model, Cmd.none )
         MsgLetMeRoot (ASTxy rootXY ast) mouseXY ->
@@ -1823,28 +1842,18 @@ view : Model -> Html Msg
 view model =
     div
         [ class "columns"
-        -- mousemove
-        -- mousemoveイベントはフォーカスされたブロックではなくviewのルートで捕獲
-        -- このほうが激しくムーブしてポインタがブロックからはずれたときにも正しく動く
-        -- 寺尾くんがゼミBで発見したアイデアを採用
-        -- ブロック表面の画像だけがドラッグされないようにpreventDefaultが必要
         , preventDefaultOn "mousemove"
               <| whenDragging model
                   <| Decode.map2
                          (\pageX pageY -> MsgMoveUs ( pageX, pageY ))
                          (Decode.field "pageX" Decode.float)
                          (Decode.field "pageY" Decode.float)
-
-        -- 追加
-        -- touchmove
         , preventDefaultOn "touchmove"
             <| whenDragging model
                 <| Decode.map2
                     (\clientX clientY -> MsgMoveUs (clientX, clientY))
                     (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
                     (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
-
-        
         ]
         [ div
             [ class "column is-one-quarter"
@@ -1879,7 +1888,10 @@ view model =
             [ class "column is-one-quarter"
             , style "background-color" "skyblue"
             ]
-            [ div   -- このあたりは適当に設定している
+            [ -- タッチ数の表示を追加
+              div [ class "notification is-info" ]
+                [ text ("現在のタッチ数: " ++ String.fromInt model.touchCount) ]
+            , div
                 [ style "position" "relative"
                 , style "top" "10px"
                 ]
@@ -1906,15 +1918,13 @@ view model =
                     , button
                         [ Decode.succeed MsgMakeNewRoutine |> on "click" ]
                         [ text "つくる" ]
-                    
                     , text (String.fromInt (List.length model.turtle.callStack)) -- デバッグ用 消してOK
                     ]
                 , div
                     []
                     [ text "さいしょのx座標 : "
                     , input
-                      [ style "width" "50px"
-                        --, placeholder "さいしょのx座標"
+                        [ style "width" "50px"
                         , value model.initXBox
                         , hidden False
                         , (Decode.map MsgInitXChanged targetValue) |> on "input"
@@ -1925,8 +1935,7 @@ view model =
                     []
                     [ text "さいしょのy座標 : "
                     , input
-                      [ style "width" "50px"
-                        --, placeholder "さいしょのy座標"
+                        [ style "width" "50px"
                         , value model.initYBox
                         , hidden False
                         , (Decode.map MsgInitYChanged targetValue) |> on "input"
@@ -1935,10 +1944,9 @@ view model =
                     ]
                 , div
                     []
-                    [ text "さいしょの向き \u{00a0}\u{00a0}: "
+                    [ text "さいしょの向き : "
                     , input
-                      [ style "width" "50px"
-                        --, placeholder "さいしょの角度"
+                        [ style "width" "50px"
                         , value model.initHeadingBox
                         , hidden False
                         , (Decode.map MsgInitHeadingChanged targetValue) |> on "input"
@@ -1948,6 +1956,7 @@ view model =
                 ]
             ]
         ]
+
 
 
 -- 根のブロックの描画
