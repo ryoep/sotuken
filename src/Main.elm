@@ -396,6 +396,7 @@ type Msg
     | MsgLetMeRoot (ASTxy Node) Position
     | MsgMoveUs Position
     | MsgAttachMe (ASTxy Node)
+    | MsgUpdateTouchCount Int  -- タッチ数を受け取る新しいメッセージ
     | MsgStartDnD Position Position
     | MsgInputChanged Position Int String
     | MsgCheckString  Position Int String
@@ -482,6 +483,9 @@ update msg model =
             ( moveUs mouseXY model, Cmd.none )
         MsgAttachMe (ASTxy rootXY ast) ->
             ( model |> stopDnD rootXY |> attachMe (ASTxy rootXY ast), Cmd.none )
+        MsgUpdateTouchCount count ->
+            -- タッチ数をモデルに反映
+            ({ model | touchCount = count }, Cmd.none)
         MsgInputChanged xy place text ->
             ( modifyText modifyTextData   xy place text model, Cmd.none )
         MsgCheckString xy place text ->
@@ -1909,7 +1913,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "マーカス" --新しい関数名
+                        , placeholder "新しい" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -1993,12 +1997,19 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
 
         -- 追加
         -- touchstart
+        --, on "touchstart"
+          --  <| whenNotDragging model
+            --    <| Decode.map2
+              --      (\clientX clientY -> MsgStartDnD (x, y) (clientX, clientY))
+                --    (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
+                  --  (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
+
+        -- touchstart イベントの修正
         , on "touchstart"
-            <| whenNotDragging model
-                <| Decode.map2
-                    (\clientX clientY -> MsgStartDnD (x, y) (clientX, clientY))
-                    (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
-                    (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
+            <| Decode.map
+                (\touches -> MsgUpdateTouchCount (List.length touches))
+                (Decode.field "touches" (Decode.list Decode.value))
+
 
         --とりあえずブロックにタッチしたら複製できる
                 -- タッチイベントで複製をトリガー
