@@ -1913,7 +1913,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "新しい" --新しい関数名
+                        , placeholder "ロナウド" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -2007,7 +2007,13 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
         -- touchstart イベントの修正
         , on "touchstart"
             <| Decode.map
-                (\touches -> MsgUpdateTouchCount (List.length touches))
+                (\touchList ->
+                    let
+                        touchCount = List.length touchList
+                        _ = Debug.log "Touches detected" touchCount
+                    in
+                    MsgUpdateTouchCount touchCount
+                )
                 (Decode.field "touches" (Decode.list Decode.value))
 
 

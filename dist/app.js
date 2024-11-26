@@ -13131,6 +13131,7 @@ var $author$project$Main$ToBottom = {$: 'ToBottom'};
 var $author$project$Main$ToRight = {$: 'ToRight'};
 var $elm$virtual_dom$VirtualDom$lazy4 = _VirtualDom_lazy4;
 var $elm$html$Html$Lazy$lazy4 = $elm$virtual_dom$VirtualDom$lazy4;
+var $elm$core$Debug$log = _Debug_log;
 var $author$project$Main$MsgLetMeRoot = F2(
 	function (a, b) {
 		return {$: 'MsgLetMeRoot', a: a, b: b};
@@ -14255,9 +14256,10 @@ var $author$project$Main$viewASTRoot = F2(
 					'touchstart',
 					A2(
 						$elm$json$Json$Decode$map,
-						function (touches) {
-							return $author$project$Main$MsgUpdateTouchCount(
-								$elm$core$List$length(touches));
+						function (touchList) {
+							var touchCount = $elm$core$List$length(touchList);
+							var _v2 = A2($elm$core$Debug$log, 'Touches detected', touchCount);
+							return $author$project$Main$MsgUpdateTouchCount(touchCount);
 						},
 						A2(
 							$elm$json$Json$Decode$field,
@@ -14548,7 +14550,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('新しい'),
+												$elm$html$Html$Attributes$placeholder('ロナウド'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(
