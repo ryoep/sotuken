@@ -24,7 +24,6 @@ import File exposing (File)
 import File.Download as Download
 import File.Select as Select
 
-port touchCountChanged : (Int -> msg) -> Sub msg --追加
 
 
 main : Program () Model Msg
@@ -42,6 +41,7 @@ main =
 
 --port sendAST : Encode.Value -> Cmd msg
 port sendArray : Encode.Value -> Cmd msg
+port touchCountChanged : (Int -> msg) -> Sub msg --追加
 
 -- MODEL
 
@@ -1926,7 +1926,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "ぶるーの" --新しい関数名
+                        , placeholder "フェルナンデス" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
