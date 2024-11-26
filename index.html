@@ -59,5 +59,21 @@
     //   console.log("Touch Count:", count);
     // });
   </script>
+
+  <script>
+    // 追加されたコード
+    window.addEventListener("load", () => {
+        const app = Elm.Main.init({
+            node: document.getElementById("elm-app")
+        });
+
+        document.addEventListener("touchstart", (event) => {
+            const touchCount = event.touches.length;
+            if (app.ports.touchCountChanged) {
+                app.ports.touchCountChanged.send(touchCount);
+            }
+        });
+    });
+  </script>
 </body>
 </html>
