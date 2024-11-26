@@ -3,77 +3,63 @@
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta charset="UTF-8">
-  <title>Sotuken</title>
+  <title>Main</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.2/css/bulma.min.css">
   <link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
-  <script src="dist/app.js"></script> <!-- Elmのコンパイル済みJavaScript -->
-  <script src="dist/touch-event.js"></script> <!-- ミニマムからコピーしたJavaScript -->
-  <style>
-    /* 必要に応じてCSSをここに記述 */
-    #touch-indicator {
-      border: 1px solid #ccc;
-      padding: 10px;
-      margin: 20px;
-      text-align: center;
-    }
-  </style>
+  <script src="dist/app.js"></script>
+  <script type="module" src="cubricks-toio-bundle.js"></script>
+  <style> </style>
 </head>
 
 <body>
-  <!-- ナビゲーションバー -->
-  <div class="navbar">
-    <div class="navbar-menu">
-      <div class="navbar-brand">
-        <a class="navbar-item" href="#">
-          <i class="fas fa-cubes fa-2x"></i>
-        </a>
-      </div>
-      <div class="navbar-start">
-        <a class="navbar-item">File</a>
-        <a class="navbar-item">Edit</a>
-        <a class="navbar-item">Help</a>
-      </div>
-      <div class="navbar-end">
-        <div class="buttons">
-          <a class="button is-primary"><strong>Sign up</strong></a>
-          <a class="button is-light">Sign in</a>
+    <div class="navbar">
+        <div class="navbar-menu">
+            <div class="navbar-brand">
+                <a class="navbar-item" href="https://bulma.io">
+                  <i class="fas fa-cubes fa-2x"></i>
+                </a>
+            </div>
+            <div class="navbar-start">
+                <a class="navbar-item">File</a>
+                <a class="navbar-item">Edit</a>
+                <a class="navbar-item">Help</a>
+            </div>
+            <div class="navbar-end">
+                <div class="buttons">
+                    <a class="button is-primary"><string>Sign up</string></a>
+                    <a class="button is-light">Sign in</string></a>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
-
-  <!-- Elmアプリの描画領域 -->
-  <div id="elm-app"></div>
-
-  <!-- ミニマム用のタッチ表示用要素 -->
-  <div id="touch-indicator">Touch Event Status</div>
-
-  <script>
-    // Elmアプリの初期化
-    var app = Elm.Main.init({
-      node: document.getElementById('elm-app')
-    });
-
-    // ElmとJavaScript間の通信をポートで接続する場合（後で実装）
-    // app.ports.receiveTouchCount.subscribe(function(count) {
-    //   console.log("Touch Count:", count);
-    // });
-  </script>
-
-  <script>
-    // 追加されたコード
-    window.addEventListener("load", () => {
-        const app = Elm.Main.init({
-            node: document.getElementById("elm-app")
+    <div id="elm-app"></div>
+    <script>
+        var app = Elm.Main.init({
+            node: document.getElementById('elm-app')
         });
 
-        document.addEventListener("touchstart", (event) => {
-            const touchCount = event.touches.length;
-            if (app.ports.touchCountChanged) {
-                app.ports.touchCountChanged.send(touchCount);
-            }
-        });
+        // タッチイベントを監視してElmに送信
+        document.addEventListener('touchstart', function (event) {
+        // タッチ数を取得
+        const touchCount = event.touches.length;
+
+        // Elmアプリにタッチ数を送信
+        app.ports.receiveTouchCount.send(touchCount);
     });
-  </script>
+
+    document.addEventListener('touchend', function (event) {
+        // タッチ数を取得（タッチが減るのを確認）
+        const touchCount = event.touches.length;
+
+        // Elmアプリにタッチ数を送信
+        app.ports.receiveTouchCount.send(touchCount);
+    });
+
+        // app.ports.sendAST.subscribe(async ast => {
+        //     console.log(ast);
+        //     //await cubricks.interpret(ast);
+        //     await interpret(ast);
+        // });
+    </script>
 </body>
 </html>
