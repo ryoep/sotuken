@@ -467,14 +467,14 @@ update msg model =
             ( cloneUs ast model, Cmd.none )
         TouchStart count ->
             let
-                message =
-                    case count of
-                        1 -> "1本のタッチを検出しました！"
-                        2 -> "2本のタッチを検出しました！"
-                        _ -> String.fromInt count ++ "本のタッチを検出しました！"
+                _ = Debug.log "TouchStart received with count" count
             in
-            ( { model | touchMessage = message }, Cmd.none )
+            ( { model | touchMessage = "タッチ数: " ++ String.fromInt count }, Cmd.none )
+
         TouchEnd ->
+            let
+                _ = Debug.log "TouchEnd received"
+            in
             ( { model | touchMessage = "タッチが終了しました！" }, Cmd.none )
         MsgStartDnD rootXY mouseXY ->
             ( startDnD rootXY mouseXY model, Cmd.none )
@@ -1919,7 +1919,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "マーカス" --新しい関数名
+                        , placeholder "あもりむ" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"

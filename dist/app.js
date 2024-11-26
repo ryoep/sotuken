@@ -10978,6 +10978,7 @@ var $author$project$Main$loadProgram = F2(
 			return model;
 		}
 	});
+var $elm$core$Debug$log = _Debug_log;
 var $author$project$Main$makeNewRoutine = function (model) {
 	var newEntryBrick = {
 		getBrickCommand: $author$project$Main$CommandNOP,
@@ -12759,22 +12760,16 @@ var $author$project$Main$update = F2(
 					$elm$core$Platform$Cmd$none);
 			case 'TouchStart':
 				var count = msg.a;
-				var message = function () {
-					switch (count) {
-						case 1:
-							return '1本のタッチを検出しました！';
-						case 2:
-							return '2本のタッチを検出しました！';
-						default:
-							return $elm$core$String$fromInt(count) + '本のタッチを検出しました！';
-					}
-				}();
+				var _v1 = A2($elm$core$Debug$log, 'TouchStart received with count', count);
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{touchMessage: message}),
+						{
+							touchMessage: 'タッチ数: ' + $elm$core$String$fromInt(count)
+						}),
 					$elm$core$Platform$Cmd$none);
 			case 'TouchEnd':
+				var _v2 = $elm$core$Debug$log('TouchEnd received');
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
@@ -12787,9 +12782,9 @@ var $author$project$Main$update = F2(
 					A3($author$project$Main$startDnD, rootXY, mouseXY, model),
 					$elm$core$Platform$Cmd$none);
 			case 'MsgLetMeRoot':
-				var _v2 = msg.a;
-				var rootXY = _v2.a;
-				var ast = _v2.b;
+				var _v3 = msg.a;
+				var rootXY = _v3.a;
+				var ast = _v3.b;
 				var mouseXY = msg.b;
 				return _Utils_Tuple2(
 					A3(
@@ -12807,9 +12802,9 @@ var $author$project$Main$update = F2(
 					A2($author$project$Main$moveUs, mouseXY, model),
 					$elm$core$Platform$Cmd$none);
 			case 'MsgAttachMe':
-				var _v3 = msg.a;
-				var rootXY = _v3.a;
-				var ast = _v3.b;
+				var _v4 = msg.a;
+				var rootXY = _v4.a;
+				var ast = _v4.b;
 				return _Utils_Tuple2(
 					A2(
 						$author$project$Main$attachMe,
@@ -14571,7 +14566,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('マーカス'),
+												$elm$html$Html$Attributes$placeholder('あもりむ'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(
