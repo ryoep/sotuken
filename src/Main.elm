@@ -31,7 +31,12 @@ main =
         { init = init
         , update = update
         , view = view
-        , subscriptions = subscriptions
+       -- , subscriptions = subscriptions
+        , subscriptions = \_ ->
+            Sub.batch
+                [ touchStart TouchStart
+                , touchEnd (\_ -> TouchEnd)
+                ]
         }
 
 
@@ -199,7 +204,7 @@ type alias Model =
     , initYBox : String         -- タートルの初期位置のy座標を入力するボックス
     , initHeadingBox : String   -- タートルの初期方向を入力するボックス
     , turtle : Turtle
-    , touchMessage : String -- タッチ数を表示するためのメッセージ
+    , touchCount : Int -- 現在のタッチ数を保持
     }
 
 
@@ -341,7 +346,7 @@ init _ =
       , initXBox = "150"
       , initYBox = "150"
       , initHeadingBox = "270"
-      , touchMessage = "タッチしてみてください"
+      , touchCount = 0
       , turtle = 
           { x = 150
           , y = 150
@@ -370,14 +375,11 @@ init _ =
 -- SUBSCRIPTIONS
 
 
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    if model.turtle.state == Running then
-        onAnimationFrameDelta MsgTick
-    else Sub.batch
-        [ touchStart TouchStart
-        , touchEnd (\_ -> TouchEnd)
-        ]
+--subscriptions : Model -> Sub Msg
+--subscriptions model =
+  --  if model.turtle.state == Running then
+    --    onAnimationFrameDelta MsgTick
+    --else Sub.none
 
 
 -- UPDATE
@@ -389,6 +391,8 @@ type Msg
     | MsgMoveUs Position
     | MsgAttachMe (ASTxy Node)
     | MsgStartDnD Position Position
+    | TouchStart Int -- タッチ数を受け取る
+    | TouchEnd -- タッチ終了イベント
     | MsgInputChanged Position Int String
     | MsgCheckString  Position Int String
     | MsgSetVarNames -- 全ての変数名を取得
@@ -408,8 +412,6 @@ type Msg
     | MsgSelected File
     | MsgLoaded String
     | MsgNOP
-    | TouchStart Int -- タッチ数
-    | TouchEnd       -- タッチが終了したことを通知
 
 
 -- 指定したルーチンを取得する関数
@@ -465,17 +467,6 @@ update msg model =
     case msg of
         MsgCloneUs ast ->
             ( cloneUs ast model, Cmd.none )
-        TouchStart count ->
-            let
-                _ = Debug.log "TouchStart received with count" count
-            in
-            ( { model | touchMessage = "タッチ数: " ++ String.fromInt count }, Cmd.none )
-
-        TouchEnd ->
-            let
-                _ = Debug.log "TouchEnd received"
-            in
-            ( { model | touchMessage = "タッチが終了しました！" }, Cmd.none )
         MsgStartDnD rootXY mouseXY ->
             ( startDnD rootXY mouseXY model, Cmd.none )
         MsgLetMeRoot (ASTxy rootXY ast) mouseXY ->
@@ -484,6 +475,10 @@ update msg model =
             ( moveUs mouseXY model, Cmd.none )
         MsgAttachMe (ASTxy rootXY ast) ->
             ( model |> stopDnD rootXY |> attachMe (ASTxy rootXY ast), Cmd.none )
+        TouchStart count ->
+            ( { model | touchCount = count }, Cmd.none )
+        TouchEnd ->
+            ( { model | touchCount = 0 }, Cmd.none ) -- タッチ終了時は0にリセット
         MsgInputChanged xy place text ->
             ( modifyText modifyTextData   xy place text model, Cmd.none )
         MsgCheckString xy place text ->
@@ -1896,7 +1891,6 @@ view model =
                                      )
                     )
             )
-        , div [ style "margin-top" "10px" ] [ text model.touchMessage ]
         , div
             [ class "column is-one-quarter"
             , style "background-color" "skyblue"
@@ -1919,7 +1913,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "あもりむ" --新しい関数名
+                        , placeholder "マーカス" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -1967,6 +1961,9 @@ view model =
                         , (Decode.succeed MsgInitHeadingBlur) |> on "blur"
                         ] []
                     ]
+                , div 
+                    []
+                    [ text ("Current touches: " ++ String.fromInt model.touchCount) ]
                 ]
             ]
         ]
