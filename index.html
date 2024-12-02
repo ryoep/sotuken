@@ -38,22 +38,19 @@
             node: document.getElementById('elm-app')
         });
 
-        // タッチイベントを監視してElmに送信
-        document.addEventListener('touchstart', function (event) {
-        // タッチ数を取得
-        const touchCount = event.touches.length;
+            // タッチイベントリスナーを設定
+            document.addEventListener("touchstart", (event) => {
+                const touchCount = event.touches.length;
+                if (app.ports && app.ports.touchStart) {
+                    app.ports.touchStart.send(touchCount);
+                }
+            });
 
-        // Elmアプリにタッチ数を送信
-        app.ports.receiveTouchCount.send(touchCount);
-    });
-
-    document.addEventListener('touchend', function (event) {
-        // タッチ数を取得（タッチが減るのを確認）
-        const touchCount = event.touches.length;
-
-        // Elmアプリにタッチ数を送信
-        app.ports.receiveTouchCount.send(touchCount);
-    });
+            document.addEventListener("touchend", () => {
+                if (app.ports && app.ports.touchEnd) {
+                    app.ports.touchEnd.send(null);
+                }
+            });
 
         // app.ports.sendAST.subscribe(async ast => {
         //     console.log(ast);
