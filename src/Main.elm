@@ -1917,7 +1917,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "新しい関数名" --新しい関数名
+                        , placeholder "マーカス" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -2006,30 +2006,30 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                              (Decode.field "pageY" Decode.float)
 
 
-        , on "touchstart"
-            <| whenNotDragging model
-                <| case model.touchCount of
-                    1 ->
-                        Decode.map2
-                            (\clientX clientY -> MsgStartDnD (x, y) (clientX, clientY))
-                            (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
-                            (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
+        --, on "touchstart"
+          --  <| whenNotDragging model
+            --    <| case model.touchCount of
+              --      1 ->
+                --        Decode.map2
+                  --          (\clientX clientY -> MsgStartDnD (x, y) (clientX, clientY))
+                    --        (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
+                      --      (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
 
-                    2 ->
-                        Decode.succeed (MsgCloneUs (ASTxy (x, y) (ASTne n b r)))
+                    --2 ->
+                      --  Decode.succeed (MsgCloneUs (ASTxy (x, y) (ASTne n b r)))
 
-                    _ ->
-                        Decode.fail "Unexpected touch count"
+                    --_ ->
+                      --  Decode.fail "Unexpected touch count"
 
 
         -- 追加
         -- touchstart
-       --, on "touchstart"
-         --   <| whenNotDragging model
-           --     <| Decode.map2
-             --       (\clientX clientY -> MsgStartDnD (x, y) (clientX, clientY))
-               --     (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
-                 --   (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
+       , on "touchstart"
+            <| whenNotDragging model
+                <| Decode.map2
+                    (\clientX clientY -> MsgStartDnD (x, y) (clientX, clientY))
+                    (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
+                    (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
 
         --とりあえずブロックにタッチしたら複製できる
                 -- タッチイベントで複製をトリガー
@@ -2049,9 +2049,9 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
 
         -- contextmenu
         -- コンテクストメニューが開かないようにpreventDefaultが必要
-        --, preventDefaultOn "contextmenu"
-          --  <| Decode.succeed
-            --      <| MsgCloneUs (ASTxy ( x, y ) (ASTne n b r))
+        , preventDefaultOn "contextmenu"
+            <| Decode.succeed
+                  <| MsgCloneUs (ASTxy ( x, y ) (ASTne n b r))
 
         --, preventDefaultOn "contextmenu" 
           --  <| (Decode.map (\_ -> (MsgCloneUs root)) Decode.value)
