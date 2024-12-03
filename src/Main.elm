@@ -1917,7 +1917,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "あもりむ" --新しい関数名
+                        , placeholder "が月著" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -2031,6 +2031,8 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                     (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
                     (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
 
+
+
         --とりあえずブロックにタッチしたら複製できる
                 -- タッチイベントで複製をトリガー
                -- , on "touchstart"
@@ -2044,14 +2046,23 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
           --    <| whenNotDragging model
             --      <| whenRightButtonIsDown
                 --      <| Decode.succeed
-                --          <| MsgCloneUs (ASTxy ( x, y ) (ASTne n b r))
+                    --      <| MsgCloneUs (ASTxy ( x, y ) (ASTne n b r))
 
 
         -- contextmenu
         -- コンテクストメニューが開かないようにpreventDefaultが必要
         , preventDefaultOn "contextmenu"
-            <| Decode.succeed
-                  <| MsgCloneUs (ASTxy ( x, y ) (ASTne n b r))
+            <| case model.touchCount of
+                2 ->
+                    Decode.succeed (MsgCloneUs (ASTxy (x, y) (ASTne n b r)))
+
+                _ ->
+                    Decode.fail "Unexpected touch count"
+
+                
+    --    , preventDefaultOn "contextmenu"
+        --    <| Decode.succeed
+                --  <| MsgCloneUs (ASTxy ( x, y ) (ASTne n b r))
 
         --, preventDefaultOn "contextmenu" 
           --  <| (Decode.map (\_ -> (MsgCloneUs root)) Decode.value)

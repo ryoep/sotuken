@@ -14141,12 +14141,19 @@ var $author$project$Main$viewASTRoot = F2(
 					A2(
 					$author$project$Main$preventDefaultOn,
 					'contextmenu',
-					$elm$json$Json$Decode$succeed(
-						$author$project$Main$MsgCloneUs(
-							A2(
-								$author$project$Main$ASTxy,
-								_Utils_Tuple2(x, y),
-								A3($author$project$Main$ASTne, n, b, r))))),
+					function () {
+						var _v2 = model.touchCount;
+						if (_v2 === 2) {
+							return $elm$json$Json$Decode$succeed(
+								$author$project$Main$MsgCloneUs(
+									A2(
+										$author$project$Main$ASTxy,
+										_Utils_Tuple2(x, y),
+										A3($author$project$Main$ASTne, n, b, r))));
+						} else {
+							return $elm$json$Json$Decode$fail('Unexpected touch count');
+						}
+					}()),
 					A2(
 					$author$project$Main$on,
 					'dblclick',
@@ -14412,7 +14419,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('あもりむ'),
+												$elm$html$Html$Attributes$placeholder('が月著'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(
