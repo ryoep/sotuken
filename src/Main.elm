@@ -1917,7 +1917,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "マーカス" --新しい関数名
+                        , placeholder "あもりむ" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -1989,10 +1989,10 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
 
         -- 追加
         -- touchend
-        --, preventDefaultOn "touchend"
-          --  <| whenDragging model
-            --    <| Decode.succeed
-              --      <| MsgAttachMe root
+        , preventDefaultOn "touchend"
+            <| whenDragging model
+                <| Decode.succeed
+                    <| MsgAttachMe root
 
 
         -- mousedown
