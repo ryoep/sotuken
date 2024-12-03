@@ -14106,14 +14106,45 @@ var $author$project$Main$viewASTRoot = F2(
 								A2($elm$json$Json$Decode$field, 'pageX', $elm$json$Json$Decode$float),
 								A2($elm$json$Json$Decode$field, 'pageY', $elm$json$Json$Decode$float))))),
 					A2(
-					$author$project$Main$preventDefaultOn,
-					'contextmenu',
-					$elm$json$Json$Decode$succeed(
-						$author$project$Main$MsgCloneUs(
-							A2(
-								$author$project$Main$ASTxy,
-								_Utils_Tuple2(x, y),
-								A3($author$project$Main$ASTne, n, b, r))))),
+					$author$project$Main$on,
+					'touchstart',
+					A2(
+						$author$project$Main$whenNotDragging,
+						model,
+						function () {
+							var _v2 = model.touchCount;
+							switch (_v2) {
+								case 1:
+									return A3(
+										$elm$json$Json$Decode$map2,
+										F2(
+											function (clientX, clientY) {
+												return A2(
+													$author$project$Main$MsgStartDnD,
+													_Utils_Tuple2(x, y),
+													_Utils_Tuple2(clientX, clientY));
+											}),
+										A2(
+											$elm$json$Json$Decode$at,
+											_List_fromArray(
+												['changedTouches', '0', 'clientX']),
+											$elm$json$Json$Decode$float),
+										A2(
+											$elm$json$Json$Decode$at,
+											_List_fromArray(
+												['changedTouches', '0', 'clientY']),
+											$elm$json$Json$Decode$float));
+								case 2:
+									return $elm$json$Json$Decode$succeed(
+										$author$project$Main$MsgCloneUs(
+											A2(
+												$author$project$Main$ASTxy,
+												_Utils_Tuple2(x, y),
+												A3($author$project$Main$ASTne, n, b, r))));
+								default:
+									return $elm$json$Json$Decode$fail('Unexpected touch count');
+							}
+						}())),
 					A2(
 					$author$project$Main$on,
 					'dblclick',
@@ -14379,7 +14410,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('あもりむ'),
+												$elm$html$Html$Attributes$placeholder('ラッシュフォード'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(

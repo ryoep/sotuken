@@ -462,6 +462,9 @@ proceed : Cmd Msg
 proceed =
     Process.sleep 0 |> Task.perform (always MsgRun)
 
+
+
+
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
@@ -475,8 +478,11 @@ update msg model =
             ( moveUs mouseXY model, Cmd.none )
         MsgAttachMe (ASTxy rootXY ast) ->
             ( model |> stopDnD rootXY |> attachMe (ASTxy rootXY ast), Cmd.none )
+        --TouchStart count ->
+          --  ( { model | touchCount = count }, Cmd.none )
         TouchStart count ->
             ( { model | touchCount = count }, Cmd.none )
+
         TouchEnd ->
             ( { model | touchCount = 0 }, Cmd.none ) -- タッチ終了時は0にリセット
         MsgInputChanged xy place text ->
@@ -1324,8 +1330,7 @@ fanOut d funB funR ( x, y ) (ASTne n b r) =
         Unchanged _ ->
             mapC2 (ASTne n) (Unchanged b) (funR ( x + d, y ) r)
 
-
--- マウスでクリックした位置のブロックを根とするASTをモデルに追加する
+-- マウスでクリックした位置のブロックを根とするASTをモデルに追加する 
 letMeRoot : ASTxy Node -> Model -> Model
 letMeRoot (ASTxy newRootXY _ as newRoot) model =
     let
@@ -1360,7 +1365,6 @@ letMeRoot (ASTxy newRootXY _ as newRoot) model =
                     |> addASTxy newRoot
             Unchanged _ ->
                 model
-
 
 -- ASTを別のASTの葉に接木する
 attachMe : ASTxy Node -> Model -> Model
@@ -1913,7 +1917,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "あもりむ" --新しい関数名
+                        , placeholder "ラッシュフォード" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -2001,6 +2005,23 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                              (Decode.field "pageX" Decode.float)--6週目　xyは211行目で取得しているのでpagex,pageyを取得する方法を考える。
                              (Decode.field "pageY" Decode.float)
 
+
+        , on "touchstart"
+            <| whenNotDragging model
+                <| case model.touchCount of
+                    1 ->
+                        Decode.map2
+                            (\clientX clientY -> MsgStartDnD (x, y) (clientX, clientY))
+                            (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
+                            (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
+
+                    2 ->
+                        Decode.succeed (MsgCloneUs (ASTxy (x, y) (ASTne n b r)))
+
+                    _ ->
+                        Decode.fail "Unexpected touch count"
+
+
         -- 追加
         -- touchstart
        --, on "touchstart"
@@ -2028,9 +2049,9 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
 
         -- contextmenu
         -- コンテクストメニューが開かないようにpreventDefaultが必要
-        , preventDefaultOn "contextmenu"
-            <| Decode.succeed
-                  <| MsgCloneUs (ASTxy ( x, y ) (ASTne n b r))
+        --, preventDefaultOn "contextmenu"
+          --  <| Decode.succeed
+            --      <| MsgCloneUs (ASTxy ( x, y ) (ASTne n b r))
 
         --, preventDefaultOn "contextmenu" 
           --  <| (Decode.map (\_ -> (MsgCloneUs root)) Decode.value)
