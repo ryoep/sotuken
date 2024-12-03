@@ -1917,7 +1917,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "が月著" --新しい関数名
+                        , placeholder "新しい関数名" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -2057,7 +2057,10 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                     Decode.succeed (MsgCloneUs (ASTxy (x, y) (ASTne n b r)))
 
                 _ ->
-                    Decode.fail "Unexpected touch count"
+                     whenNotDragging model
+                       <| whenRightButtonIsDown
+                          <| Decode.succeed
+                              <| MsgCloneUs (ASTxy ( x, y ) (ASTne n b r))
 
                 
     --    , preventDefaultOn "contextmenu"
