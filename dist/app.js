@@ -14131,12 +14131,12 @@ var $author$project$Main$viewASTRoot = F2(
 							A2(
 								$elm$json$Json$Decode$at,
 								_List_fromArray(
-									['changedTouches', '0', 'clientX']),
+									['touches', '0', 'clientX']),
 								$elm$json$Json$Decode$float),
 							A2(
 								$elm$json$Json$Decode$at,
 								_List_fromArray(
-									['changedTouches', '0', 'clientY']),
+									['touches', '0', 'clientY']),
 								$elm$json$Json$Decode$float)))),
 					A2(
 					$author$project$Main$preventDefaultOn,
@@ -14310,12 +14310,12 @@ var $author$project$Main$view = function (model) {
 						A2(
 							$elm$json$Json$Decode$at,
 							_List_fromArray(
-								['changedTouches', '0', 'clientX']),
+								['touches', '0', 'clientX']),
 							$elm$json$Json$Decode$float),
 						A2(
 							$elm$json$Json$Decode$at,
 							_List_fromArray(
-								['changedTouches', '0', 'clientY']),
+								['touches', '0', 'clientY']),
 							$elm$json$Json$Decode$float))))
 			]),
 		_List_fromArray(

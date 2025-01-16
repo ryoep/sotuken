@@ -31,8 +31,8 @@ main =
         { init = init
         , update = update
         , view = view
-       -- , subscriptions = subscriptions
-        , subscriptions = \_ ->
+    --    , subscriptions = subscriptions
+        , subscriptions = \_ -> --追加
             Sub.batch
                 [ touchStart TouchStart
                 , touchEnd (\_ -> TouchEnd)
@@ -45,8 +45,8 @@ main =
 
 --port sendAST : Encode.Value -> Cmd msg
 port sendArray : Encode.Value -> Cmd msg
-port touchStart : (Int -> msg) -> Sub msg
-port touchEnd : (() -> msg) -> Sub msg
+port touchStart : (Int -> msg) -> Sub msg--追加
+port touchEnd : (() -> msg) -> Sub msg--追加
 
 -- MODEL
 
@@ -204,7 +204,7 @@ type alias Model =
     , initYBox : String         -- タートルの初期位置のy座標を入力するボックス
     , initHeadingBox : String   -- タートルの初期方向を入力するボックス
     , turtle : Turtle
-    , touchCount : Int -- 現在のタッチ数を保持
+    , touchCount : Int -- 現在のタッチ数を保持追加　
     }
 
 
@@ -346,7 +346,7 @@ init _ =
       , initXBox = "150"
       , initYBox = "150"
       , initHeadingBox = "270"
-      , touchCount = 0
+      , touchCount = 0 --追加
       , turtle = 
           { x = 150
           , y = 150
@@ -374,7 +374,7 @@ init _ =
 
 -- SUBSCRIPTIONS
 
-
+--ロボットの動作の制御
 --subscriptions : Model -> Sub Msg
 --subscriptions model =
   --  if model.turtle.state == Running then
@@ -391,8 +391,8 @@ type Msg
     | MsgMoveUs Position
     | MsgAttachMe (ASTxy Node)
     | MsgStartDnD Position Position
-    | TouchStart Int -- タッチ数を受け取る
-    | TouchEnd -- タッチ終了イベント
+    | TouchStart Int -- 追加（タッチ数を受け取る）
+    | TouchEnd -- 追加（タッチ終了イベント）
     | MsgInputChanged Position Int String
     | MsgCheckString  Position Int String
     | MsgSetVarNames -- 全ての変数名を取得
@@ -480,10 +480,9 @@ update msg model =
             ( model |> stopDnD rootXY |> attachMe (ASTxy rootXY ast), Cmd.none )
         --TouchStart count ->
           --  ( { model | touchCount = count }, Cmd.none )
-        TouchStart count ->
+        TouchStart count -> --追加
             ( { model | touchCount = count }, Cmd.none )
-
-        TouchEnd ->
+        TouchEnd -> --追加
             ( { model | touchCount = 0 }, Cmd.none ) -- タッチ終了時は0にリセット
         MsgInputChanged xy place text ->
             ( modifyText modifyTextData   xy place text model, Cmd.none )
@@ -1861,8 +1860,8 @@ view model =
             <| whenDragging model
                 <| Decode.map2
                     (\clientX clientY -> MsgMoveUs (clientX, clientY))
-                    (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
-                    (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
+                    (Decode.at ["touches", "0", "clientX"] Decode.float)
+                    (Decode.at ["touches", "0", "clientY"] Decode.float)
 
         
         ]
@@ -2002,24 +2001,8 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                       -- MsgLetMeRootは根には無意味、代わりにMsgStartDnDを単独でセット
                       <| Decode.map2
                              (\pageX pageY -> MsgStartDnD ( x, y ) ( pageX, pageY ))
-                             (Decode.field "pageX" Decode.float)--6週目　xyは211行目で取得しているのでpagex,pageyを取得する方法を考える。
+                             (Decode.field "pageX" Decode.float)
                              (Decode.field "pageY" Decode.float)
-
-
-        --, on "touchstart"
-          --  <| whenNotDragging model
-            --    <| case model.touchCount of
-              --      1 ->
-                --        Decode.map2
-                  --          (\clientX clientY -> MsgStartDnD (x, y) (clientX, clientY))
-                    --        (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
-                      --      (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
-
-                    --2 ->
-                      --  Decode.succeed (MsgCloneUs (ASTxy (x, y) (ASTne n b r)))
-
-                    --_ ->
-                      --  Decode.fail "Unexpected touch count"
 
 
         -- 追加
@@ -2027,17 +2010,9 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
        , on "touchstart"
             <| whenNotDragging model
                 <| Decode.map2
-                    (\clientX clientY -> MsgStartDnD (x, y) (clientX, clientY))
-                    (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
-                    (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
-
-
-
-        --とりあえずブロックにタッチしたら複製できる
-                -- タッチイベントで複製をトリガー
-               -- , on "touchstart"
-                 --   <| whenNotDragging model
-                   --     <| Decode.succeed (MsgCloneUs root)
+                    (\clientX clientY -> MsgStartDnD (x, y) (clientX, clientY)) --(x,y)は現在の座標を表してる
+                    (Decode.at ["touches", "0", "clientX"] Decode.float)
+                    (Decode.at ["touches", "0", "clientY"] Decode.float)
 
 
         -- contextmenu
@@ -2048,27 +2023,28 @@ viewASTRoot model (ASTxy ( x, y ) (ASTne n b r) as root) =
                 --      <| Decode.succeed
                     --      <| MsgCloneUs (ASTxy ( x, y ) (ASTne n b r))
 
-
+        --追加
         -- contextmenu
         -- コンテクストメニューが開かないようにpreventDefaultが必要
         , preventDefaultOn "contextmenu"
             <| case model.touchCount of
+            -- タッチでの複製
                 2 ->
                     Decode.succeed (MsgCloneUs (ASTxy (x, y) (ASTne n b r)))
-
+            -- マウスでの複製
                 _ ->
                      whenNotDragging model
-                       <| whenRightButtonIsDown
+                       <| whenRightButtonIsDown --右クリックかどうかの判定
                           <| Decode.succeed
                               <| MsgCloneUs (ASTxy ( x, y ) (ASTne n b r))
 
-                
+
+--　右クリックで複製（タッチ、マウス両方）                
     --    , preventDefaultOn "contextmenu"
         --    <| Decode.succeed
                 --  <| MsgCloneUs (ASTxy ( x, y ) (ASTne n b r))
 
-        --, preventDefaultOn "contextmenu" 
-          --  <| (Decode.map (\_ -> (MsgCloneUs root)) Decode.value)
+
 
         -- dblclick
         , on "dblclick"
