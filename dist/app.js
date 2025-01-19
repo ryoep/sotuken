@@ -9848,6 +9848,10 @@ var $author$project$Main$MsgTick = function (a) {
 	return {$: 'MsgTick', a: a};
 };
 var $author$project$Main$Running = {$: 'Running'};
+var $author$project$Main$TouchEnd = {$: 'TouchEnd'};
+var $author$project$Main$TouchStart = function (a) {
+	return {$: 'TouchStart', a: a};
+};
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $elm$browser$Browser$AnimationManager$Delta = function (a) {
@@ -9979,8 +9983,24 @@ var $elm$browser$Browser$AnimationManager$onAnimationFrameDelta = function (tagg
 		$elm$browser$Browser$AnimationManager$Delta(tagger));
 };
 var $elm$browser$Browser$Events$onAnimationFrameDelta = $elm$browser$Browser$AnimationManager$onAnimationFrameDelta;
+var $elm$json$Json$Decode$null = _Json_decodeNull;
+var $author$project$Main$touchEnd = _Platform_incomingPort(
+	'touchEnd',
+	$elm$json$Json$Decode$null(_Utils_Tuple0));
+var $elm$json$Json$Decode$int = _Json_decodeInt;
+var $author$project$Main$touchStart = _Platform_incomingPort('touchStart', $elm$json$Json$Decode$int);
 var $author$project$Main$subscriptions = function (model) {
-	return _Utils_eq(model.turtle.state, $author$project$Main$Running) ? $elm$browser$Browser$Events$onAnimationFrameDelta($author$project$Main$MsgTick) : $elm$core$Platform$Sub$none;
+	var baseSubscription = _Utils_eq(model.turtle.state, $author$project$Main$Running) ? $elm$browser$Browser$Events$onAnimationFrameDelta($author$project$Main$MsgTick) : $elm$core$Platform$Sub$none;
+	return $elm$core$Platform$Sub$batch(
+		_List_fromArray(
+			[
+				baseSubscription,
+				$author$project$Main$touchStart($author$project$Main$TouchStart),
+				$author$project$Main$touchEnd(
+				function (_v0) {
+					return $author$project$Main$TouchEnd;
+				})
+			]));
 };
 var $author$project$Main$ASTxy = F2(
 	function (a, b) {
@@ -10869,7 +10889,6 @@ var $author$project$Main$nodeDecode = A4(
 	A2($elm$json$Json$Decode$field, 'getBrickType', $author$project$Main$brickTypeDecode),
 	A2($elm$json$Json$Decode$field, 'getBrickCommand', $author$project$Main$brickCommandDecode),
 	A2($elm$json$Json$Decode$field, 'getText', $author$project$Main$textDecode));
-var $elm$json$Json$Decode$null = _Json_decodeNull;
 var $elm$json$Json$Decode$oneOf = _Json_oneOf;
 function $author$project$Main$cyclic$astDecode() {
 	return $elm$json$Json$Decode$oneOf(
@@ -14016,7 +14035,6 @@ var $author$project$Main$viewBrick = F3(
 				}()
 				]));
 	});
-var $elm$json$Json$Decode$int = _Json_decodeInt;
 var $elm_community$json_extra$Json$Decode$Extra$when = F3(
 	function (checkDecoder, check, passDecoder) {
 		return A2(
@@ -14552,7 +14570,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('新しい関数名'),
+												$elm$html$Html$Attributes$placeholder('ぶるーの'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(

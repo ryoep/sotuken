@@ -375,11 +375,27 @@ init _ =
 -- SUBSCRIPTIONS
 
 --ロボットの動作の制御
+--subscriptions : Model -> Sub Msg
+--subscriptions model =
+  --  if model.turtle.state == Running then
+    --    onAnimationFrameDelta MsgTick
+    --else Sub.none
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    if model.turtle.state == Running then
-        onAnimationFrameDelta MsgTick
-    else Sub.none
+    let
+        baseSubscription =
+            if model.turtle.state == Running then
+                onAnimationFrameDelta MsgTick
+            else
+                Sub.none
+    in
+    Sub.batch
+        [ baseSubscription
+        , touchStart TouchStart
+        , touchEnd (\_ -> TouchEnd)
+        ]
+
 
 
 -- UPDATE
@@ -1916,7 +1932,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "新しい関数名" --新しい関数名
+                        , placeholder "ぶるーの" --新しい関数名
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
