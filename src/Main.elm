@@ -31,12 +31,12 @@ main =
         { init = init
         , update = update
         , view = view
-    --    , subscriptions = subscriptions
-        , subscriptions = \_ -> --追加
-            Sub.batch
-                [ touchStart TouchStart
-                , touchEnd (\_ -> TouchEnd)
-                ]
+        , subscriptions = subscriptions
+    --    , subscriptions = \_ -> --追加
+    --        Sub.batch
+      --          [ touchStart TouchStart
+        --        , touchEnd (\_ -> TouchEnd)
+          --      ]
         }
 
 
@@ -375,11 +375,11 @@ init _ =
 -- SUBSCRIPTIONS
 
 --ロボットの動作の制御
---subscriptions : Model -> Sub Msg
---subscriptions model =
-  --  if model.turtle.state == Running then
-    --    onAnimationFrameDelta MsgTick
-    --else Sub.none
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    if model.turtle.state == Running then
+        onAnimationFrameDelta MsgTick
+    else Sub.none
 
 
 -- UPDATE
