@@ -14139,6 +14139,33 @@ var $author$project$Main$viewAST = F4(
 									A2($elm$json$Json$Decode$field, 'offsetX', $elm$json$Json$Decode$float),
 									A2($elm$json$Json$Decode$field, 'offsetY', $elm$json$Json$Decode$float))))),
 						A2(
+						$author$project$Main$on,
+						'touchstart',
+						A2(
+							$author$project$Main$whenNotDragging,
+							model,
+							A5(
+								$elm$json$Json$Decode$map4,
+								F4(
+									function (pageX, pageY, offsetX, offsetY) {
+										var boundingY = pageY - offsetY;
+										var boundingX = pageX - offsetX;
+										return A2(
+											$author$project$Main$insideBrick,
+											_Utils_Tuple2(x, y),
+											_Utils_Tuple2(boundingX, boundingY)) ? A2(
+											$author$project$Main$MsgLetMeRoot,
+											A2(
+												$author$project$Main$ASTxy,
+												_Utils_Tuple2(x, y),
+												A3($author$project$Main$ASTne, n, b, r)),
+											_Utils_Tuple2(pageX, pageY)) : $author$project$Main$MsgNOP;
+									}),
+								A2($elm$json$Json$Decode$field, 'pageX', $elm$json$Json$Decode$float),
+								A2($elm$json$Json$Decode$field, 'pageY', $elm$json$Json$Decode$float),
+								A2($elm$json$Json$Decode$field, 'offsetX', $elm$json$Json$Decode$float),
+								A2($elm$json$Json$Decode$field, 'offsetY', $elm$json$Json$Decode$float)))),
+						A2(
 						$author$project$Main$preventDefaultOn,
 						'contextmenu',
 						A2(
@@ -14570,7 +14597,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												A2($elm$html$Html$Attributes$style, 'width', '150px'),
-												$elm$html$Html$Attributes$placeholder('ぶるーの'),
+												$elm$html$Html$Attributes$placeholder('新しい関数名'),
 												$elm$html$Html$Attributes$value(model.routineBox),
 												$elm$html$Html$Attributes$hidden(false),
 												A2(

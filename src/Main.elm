@@ -494,8 +494,6 @@ update msg model =
             ( moveUs mouseXY model, Cmd.none )
         MsgAttachMe (ASTxy rootXY ast) ->
             ( model |> stopDnD rootXY |> attachMe (ASTxy rootXY ast), Cmd.none )
-        --TouchStart count ->
-          --  ( { model | touchCount = count }, Cmd.none )
         TouchStart count -> --追加
             ( { model | touchCount = count }, Cmd.none )
         TouchEnd -> --追加
@@ -1932,7 +1930,7 @@ view model =
                     []
                     [ input
                         [ style "width" "150px"
-                        , placeholder "ぶるーの" --新しい関数名
+                        , placeholder "新しい関数名"
                         , value model.routineBox
                         , hidden False
                         , (Decode.map MsgRoutineBoxChanged targetValue) |> on "input"
@@ -2126,6 +2124,38 @@ viewAST model ( x, y ) direction ast =
                                   -- 以下はターゲットがInputフォームかどうかの判定の計算にのみ使用
                                   (Decode.field "offsetX" Decode.float)
                                   (Decode.field "offsetY" Decode.float)
+
+
+                -- touchstart
+                , on "touchstart"
+                      <| whenNotDragging model
+                          <| Decode.map4
+                              (\pageX pageY offsetX offsetY ->
+                                  let
+                                          -- boudingX/Yの計算でもclientX/YではなくpageX/Yを使用
+                                          -- するよう変更（Thanks: 山中君）
+                                          -- 変数名mouseX/YもpageX/Yに変更
+                                      boundingX = pageX - offsetX
+                                      boundingY = pageY - offsetY
+                                  in
+                                          -- Inputフォームのmouseclickが捕獲されなくなるバグへの
+                                          -- ワークアラウンド。( boundingX, boundingY )がブロックの左上
+                                          -- のときだけMsgLetMeRootを発行する。そうでなくて
+                                          -- Inputフォームの左上のときはletMeRootが実行されることは
+                                          -- なくなるので、Inputフォームのmouseclickイベントが正しく
+                                          -- 処理されるようになる。
+                                      if insideBrick ( x, y ) ( boundingX, boundingY )
+                                      then MsgLetMeRoot
+                                               (ASTxy ( x, y ) (ASTne n b r))
+                                               ( pageX, pageY )
+                                      else MsgNOP
+                              )
+                              (Decode.field "pageX" Decode.float)
+                              (Decode.field "pageY" Decode.float)
+                                  -- 以下はターゲットがInputフォームかどうかの判定の計算にのみ使用
+                              (Decode.field "offsetX" Decode.float)
+                              (Decode.field "offsetY" Decode.float)
+
                 -- contextmenu
                 -- コンテクストメニューが開かないようにpreventDefaultが必要
                 , preventDefaultOn "contextmenu"
